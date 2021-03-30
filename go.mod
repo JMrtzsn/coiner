@@ -1,3 +1,3 @@
-module github.com/JMrtzsn/coiner
+module github.com/JMrtzsn/coinerq
 
-go 1.15
+go 1.16

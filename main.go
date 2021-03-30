@@ -1,15 +1,24 @@
 package coiner
 
+import (
+	"internal/binance"
+	"net/http"
+)
+
 // Exchange is the external interface coiner uses to structure exchanges
 type Exchange interface {
 	Init()
 	Klines() []Kline
 }
 
-// Env contains required ENV variables, loaded from execution path?
-type Env struct {
+// Ensure the handlers implement the required interfaces/types at compile time
+var (
+	_ Exchange = Exchange(&Binance)
+	_ http.Handler = http.HandlerFunc((&controller{}).health)
+	_ middleware   = (&controller{}).logging
+	_ middleware   = (&controller{}).tracing
+)
 
-}
 // Data model for KLINE data
 type Kline struct  {
 	DATE string
