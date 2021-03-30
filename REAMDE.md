@@ -1,2 +1,2 @@
 ### Coiner
-Go package for downloading historical trade data for cryptocurrencies 
+- Coiner is a simple golang interface package containing implementations of crypto exchanges that satisfy that interface
