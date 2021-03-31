@@ -11,7 +11,8 @@ type Config struct {
 	apiSecret string
 }
 
-func (c *Config) loadEnv(){
+// LoadEnv loads all possible env variables
+func (c *Config) LoadEnv(){
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

@@ -7,20 +7,20 @@ import (
 )
 
 type Binance struct {
-	Client binance.Client
+	client binance.Client
+	config Config
 }
 
-func (exchange *Binance) Init(config Config) error {
-	client := *binance.NewClient(config.apiKey, config.apiSecret)
-	exchange.Client = client
-	return nil
+func (e *Binance) Init() {
+	client := *binance.NewClient(e.config.apiKey, e.config.apiSecret)
+	e.client = client
 }
 
 
 // -------------- Historical Data  -----------------
 
-func (exchange *Binance) tickerPrices(symbol string) ([]*binance.SymbolPrice, error) {
-	order, err := exchange.Client.NewListPricesService().Symbol(symbol).
+func (e *Binance) Prices(symbol string) ([]*binance.SymbolPrice, error) {
+	order, err := e.client.NewListPricesService().Symbol(symbol).
 		Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -28,19 +28,24 @@ func (exchange *Binance) tickerPrices(symbol string) ([]*binance.SymbolPrice, er
 	return order, nil
 }
 
-
-func (exchange *Binance) candles(symbol string, interval string) ([]*binance.Kline, error) {
-	candles, err := exchange.Client.NewKlinesService().Symbol(symbol).
-		Interval(interval).Do(context.Background())
+// Klines creates a historical
+func (e *Binance) Klines(symbol string, interval string, start, end int64, limit int) ([]*binance.Kline, error) {
+	candles, err := e.client.
+		NewKlinesService().
+		Symbol(symbol).
+		Interval(interval).
+		StartTime(start).
+		EndTime(end).
+		Limit(limit).
+		Do(context.Background())
 	if err != nil {
-
 		return nil, err
 	}
 	return candles, nil
 }
 
-func (exchange *Binance) accountBalance() ([]binance.Balance, error) {
-	res, err := exchange.Client.NewGetAccountService().Do(context.Background())
+func (e *Binance) AccountBalance() ([]binance.Balance, error) {
+	res, err := e.client.NewGetAccountService().Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +53,8 @@ func (exchange *Binance) accountBalance() ([]binance.Balance, error) {
 }
 
 
-func (exchange *Binance) symbolDepth(symbol string) (*binance.DepthResponse, error) {
-	order, err := exchange.Client.NewDepthService().Symbol(symbol).
+func (e *Binance) Depth(symbol string) (*binance.DepthResponse, error) {
+	order, err := e.client.NewDepthService().Symbol(symbol).
 		Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -59,12 +64,12 @@ func (exchange *Binance) symbolDepth(symbol string) (*binance.DepthResponse, err
 
 // -------------- Orders -----------------
 
-func (exchange *Binance) marketOrder(symbol string, order string, quantity string) (*binance.CreateOrderResponse, error) {
+func (e *Binance) marketOrder(symbol string, order string, quantity string) (*binance.CreateOrderResponse, error) {
 	side, err := setSideType(order)
 	if err != nil {
 		return nil, err
 	}
-	result, err := exchange.Client.NewCreateOrderService().
+	result, err := e.client.NewCreateOrderService().
 		Symbol(symbol).
 		Side(side).
 		Type(binance.OrderTypeMarket).
@@ -76,8 +81,8 @@ func (exchange *Binance) marketOrder(symbol string, order string, quantity strin
 	return result, nil
 }
 
-func (exchange *Binance) orderStatus(orderId int64, symbol string) (*binance.Order, error) {
-	order, err := exchange.Client.NewGetOrderService().Symbol(symbol).
+func (e *Binance) orderStatus(orderId int64, symbol string) (*binance.Order, error) {
+	order, err := e.client.NewGetOrderService().Symbol(symbol).
 		OrderID(orderId).Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -85,8 +90,8 @@ func (exchange *Binance) orderStatus(orderId int64, symbol string) (*binance.Ord
 	return order, nil
 }
 
-func (exchange *Binance) cancelOrder(orderId int64, symbol string) (*binance.CancelOrderResponse, error) {
-	order, err := exchange.Client.NewCancelOrderService().Symbol(symbol).
+func (e *Binance) cancelOrder(orderId int64, symbol string) (*binance.CancelOrderResponse, error) {
+	order, err := e.client.NewCancelOrderService().Symbol(symbol).
 		OrderID(orderId).Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -94,8 +99,8 @@ func (exchange *Binance) cancelOrder(orderId int64, symbol string) (*binance.Can
 	return order, nil
 }
 
-func (exchange *Binance) openOrders(symbol string) ([]*binance.Order, error) {
-	order, err := exchange.Client.NewListOpenOrdersService().Symbol(symbol).
+func (e *Binance) openOrders(symbol string) ([]*binance.Order, error) {
+	order, err := e.client.NewListOpenOrdersService().Symbol(symbol).
 		Do(context.Background())
 	if err != nil {
 		return nil, err
