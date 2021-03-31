@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
+	"github.com/jmrtzsn/coiner/internal"
 )
 
 type Binance struct {
@@ -12,8 +13,9 @@ type Binance struct {
 }
 
 func (e *Binance) Init() {
-	client := *binance.NewClient(e.config.apiKey, e.config.apiSecret)
-	e.client = client
+	e.client = *binance.NewClient(e.config.apiKey, e.config.apiSecret)
+	config := Config{}
+	config.LoadEnv()
 }
 
 
@@ -29,7 +31,7 @@ func (e *Binance) Prices(symbol string) ([]*binance.SymbolPrice, error) {
 }
 
 // Klines creates a historical
-func (e *Binance) Klines(symbol string, interval string, start, end int64, limit int) ([]*binance.Kline, error) {
+func (e *Binance) Klines(symbol string, interval string, start, end int64, limit int) ([]internal.Kline, error) {
 	candles, err := e.client.
 		NewKlinesService().
 		Symbol(symbol).
@@ -41,7 +43,7 @@ func (e *Binance) Klines(symbol string, interval string, start, end int64, limit
 	if err != nil {
 		return nil, err
 	}
-	return candles, nil
+	return toKline(candles), nil
 }
 
 func (e *Binance) AccountBalance() ([]binance.Balance, error) {
@@ -61,6 +63,23 @@ func (e *Binance) Depth(symbol string) (*binance.DepthResponse, error) {
 	}
 	return order, nil
 }
+
+func toKline(blines []*binance.Kline ) []internal.Kline {
+	klines := make([]internal.Kline, len(blines))
+	for _, b := range blines {
+		append(klines, internal.Kline{
+			DATE:   b.OpenTime,
+			TS:     "",
+			OPEN:   b.Open,
+			CLOSE:  b.Close,
+			HIGH:   b.High,
+			LOW:    b.Low,
+			VOLUME: b.Volume,
+		})
+	}
+	return
+}
+
 
 // -------------- Orders -----------------
 
