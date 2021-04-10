@@ -2,7 +2,6 @@ package binance
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
 	"github.com/jmrtzsn/coiner/internal"
@@ -59,7 +58,7 @@ func isoToUnix(date string) (int64, error) {
 
 func unixToISO(date int64) string {
 	dt := time.Unix(date/1000, 0)
-	return dt.Format(time.RFC3339)
+	return dt.UTC().Format(time.RFC3339)
 }
 
 func toOHLCV(blines []*binance.Kline) []internal.OHLCV {
@@ -108,9 +107,6 @@ func (e *Binance) klines(symbol, interval string, start, end int64) ([]*binance.
 		Do(context.Background())
 	if err != nil {
 		return nil, err
-	}
-	if len(candles) == 0 {
-		return nil, errors.New("received 0 candles")
 	}
 	return candles, nil
 }
