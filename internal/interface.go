@@ -13,7 +13,7 @@ type OHLCV struct {
 }
 
 // ToCSV converts to CSV format
-func toCSV(data []OHLCV) [][]string {
+func ToCSV(data []OHLCV) [][]string {
 	var csvs [][]string
 	csvs = append(csvs, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
 	for _, row := range data {
