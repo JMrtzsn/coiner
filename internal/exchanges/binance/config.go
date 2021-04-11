@@ -1,7 +1,6 @@
 package binance
 
 import (
-	"github.com/jmrtzsn/coiner/internal"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -12,11 +11,7 @@ type Config struct {
 	apiSecret string
 }
 
-// Ensure the exchanges implement the required interfaces/types at compile time
-var (
-	_ internal.Config = &Config{}
-)
-
+// TODO should be loaded from a central location?
 // LoadEnv loads all possible env variables
 func (c *Config) LoadEnv() {
 	err := godotenv.Load()

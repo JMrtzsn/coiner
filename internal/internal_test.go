@@ -44,14 +44,28 @@ func TestMain(m *testing.M) {
 }
 
 func Test_OHLCV_ToCSV(t *testing.T) {
-	want := "2020-04-04T12:00:00Z,1586001600,6696.68000000,6717.68000000,6717.68000000,6686.43000000,155.99070000"
+	want := []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"}
 	got := data[0].csv()
 	Compare(t, got, want)
 }
 
-func Test_toCSV(t *testing.T){
+func Test_toCSV(t *testing.T) {
 	got := toCSV(data)
-	Compare(t, got[0], "DATE,TS,OPEN,CLOSE,HIGH,LOW,VOLUME")
-	Compare(t, got[1], "2020-04-04T12:00:00Z,1586001600,6696.68000000,6717.68000000,6717.68000000,6686.43000000,155.99070000")
+	Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+	Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 }
 
+func Test_saveCSVLocal(t *testing.T) {
+	records := toCSV(data)
+	test := "test"
+	err := SaveCSV(records, test)
+	Check(t, err)
+
+	got := OpenCSV("test")
+
+	Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+	Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+
+	err = os.Remove(GetFilepath(test))
+	Check(t, err)
+}
