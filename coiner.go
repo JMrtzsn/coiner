@@ -20,7 +20,7 @@ var (
 	_ Exchange = &binance.Binance{}
 )
 
-// TODO Exchange, Output [GCP, Local etc], time [day, hour, minute], Symbol, date_from, date_to
+// TODO Exchange, Output [export, Local etc], time [day, hour, minute], Symbol, date_from, date_to
 func main() {
 	// "Binance, BTCUSD, 1 min, date_from, date_to
 	// TODO: translate args into creation of an exchange interface object, init it and download
