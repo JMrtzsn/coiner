@@ -1,6 +1,7 @@
-// Contains common exchange structs, interfaces
+// Contains common exchange structs, interfaces used as internal API for sub-packages
 package internal
 
+// OHLCV is the main communications struct for downloading historical data
 // OPEN, HIGH, LOW, CLOSE and VOLUME
 type OHLCV struct {
 	DATE   string // dateTime
@@ -12,7 +13,7 @@ type OHLCV struct {
 	VOLUME string // float
 }
 
-// ToCSV converts to CSV format
+// ToCSV converts an OHLCV slice to CSV records
 func ToCSV(data []OHLCV) [][]string {
 	var csvs [][]string
 	csvs = append(csvs, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
