@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "chrysopoeia-303306",
+  "private_key_id": "fa3e0fc2f0eb7e93826ef2ac069e253e13c01510",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCGBM/L1V4bgsoG\nxqa2qL9JWrSIlVumhe6RmRdcrhqbR1pv0VLyFIvjIsfRusXKxP/DUVe/8+0+ewre\nsVD5/NttrxrbR6OZbVHg+PuDujqfSTIyVt/pW1lnUIAPh8oSuQb9zPlEY9Qod1lO\ng5uD3EEXkVpleUyMysd414LK46/Ewn2YkytdE7f4ggesv4QT2I4IO6WKfe5e23GV\nP5XPXifO9YVOi0DtbhQErsZrxaFU+a+YsuzQuEUZNApADorXCv28xaVXs+12R4Mv\n7ip39MiIatoWxJe/LJ5Ro+vTXj7hBC5jsJmJ9oHvUMERAWkvuziVOK3SdbHivLhs\nFJvXK3O1AgMBAAECgf9PDIeEs1XO5FZFqOas1tv9aIMUDQUCM/2D48jj4c3PyUaO\nrek+4N+iGeHC02fXMlup2VDo5/gH4ouGzw/0ZDEJgT9WF+tnlBO3nyS7jh0F1ybE\ninmIK1mQluryPiXy5TA6g6yDql55f+wtY3NXU5MRU6r+L433faQqovOCuMn0Q+lC\nmPtbd1QRv3PInOmmsYETYH5/J+G9TlX2ZNunV77TBbnNTuWdmsMTKXIaB4af2V5x\nHlUDqNahBcoiC26jgV/sKg2tvOiCCva/JBck1haFYFerQdll72Hbdhy2J2v/74yd\nM7h09WQdTyNvi4QmPJw8WsoQIA37Pj+PmMi5iwECgYEAvR9cvYlSnZlSRHorrLPV\nPIaMYzrEn4cYs/7wK+JTSdxAhURSCm6R1j+ZTlobSmEw8eviNwzmwRxTXHMiu5y5\nMVqa+lNutAkdMqGGjlViVIDN5Nbay3FKZV+26GRUVaSOIDYSBwy0Yp/uj+YP2cqu\n9ufm2XQaGpYTyLZO4MF4EnUCgYEAtWkXgI18ID7YaiM1amyMYSgIJbRYB9CpLris\n9o90/5J3CNCGA8OFIzAFVAT+Cz9wl+I9mLf3EDbBc+Tv7/oAZe+p3HLSo9FGVf/Q\n/623W7BcxAHdDU/x2ltNs3Vec/7SXp+hZUrxAKtxBYVVqwnqwbk/I1e4ovx5E6UU\n0/hTNEECgYEAn3UHA8P6BWlVpOkBVA8YdnzXd38Ac6U7neAQ7l9YbEkpmXO+XI9X\npTZgc2Cj6/XAh+mkBVh6Y04XtzZYjakZuFQ1oWShTWj11k+8nNu/GZK0hwLk3W27\nFXg7Rvv443DoaJ5OWuVKXnGMeoW2zaIIHaPvz18F926cZbnZDcXyEFUCgYA3W8WH\nPiW1tVfXM71WJ5/C+jNaRili4SLvlf16FBbw8qIOd4ud1GlpbnsBw7A+gHJ8dtaz\nJthnAz6PfjpV8eVzNeqQ0h1DTlZ3YeRGUZ2VhkEYszTgnhfAuYIBlHxpS0apB295\n+J+Iw8huldypoBIaYcxJnbhDTGYqP4MWmD3TwQKBgF/zPs35vIPBe0TnN0wQgSWY\nr39BDiHIEY4ckuzddyEGAQseSpLk3JShiL4PV7GY6Uut19O/kmf1psJLT1lGDC6a\n7cLj2CMfEFgUyHdTRLJ3b/x0f9wZsjRVhucCYBz/6onRVaQNtJX4jhQ6X/Gc/+rf\nk1qq+k4s2Od4Lvr/AEff\n-----END PRIVATE KEY-----\n",
+  "client_email": "storage@chrysopoeia-303306.iam.gserviceaccount.com",
+  "client_id": "107021778599148548347",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/storage%40chrysopoeia-303306.iam.gserviceaccount.com"
+}

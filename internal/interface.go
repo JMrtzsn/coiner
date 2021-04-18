@@ -4,8 +4,8 @@ package internal
 // OHLCV is the main communications struct for downloading historical data
 // OPEN, HIGH, LOW, CLOSE and VOLUME
 type OHLCV struct {
-	DATE   string // dateTime
-	TS     string // Timestamp
+	DATE   string // dateTime 3933 format
+	TS     string // unix timestamp milliseconds
 	OPEN   string // float
 	CLOSE  string // float
 	HIGH   string // float

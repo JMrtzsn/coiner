@@ -1,0 +1,7 @@
+TODO:
+- uniform export functionality using the writer interface
+- chose file format, csv, json, db rows
+
+
+Structure
+export -> prep-export [fileformat, storagepath, writer out] -> export

@@ -1,7 +1,12 @@
 package export
 
 import (
+	"fmt"
 	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/export/local"
+	"github.com/jmrtzsn/coiner/internal/export/storage"
+	"github.com/jmrtzsn/coiner/internal/projectpath"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"testing"
@@ -36,27 +41,59 @@ var data = []internal.OHLCV{
 		VOLUME: "56.91619600",
 	},
 }
+var (
+	records [][]string
+	test    = "test"
+	bucket  = os.Getenv("CLOUD_BUCKET")
+)
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
+	records = internal.ToCSV(data)
+	CreateTempFile()
+	if err := godotenv.Load(fmt.Sprintf("%s/.env",projectpath.Root)); err != nil {
+		log.Fatal(err)
+	}
+	bucket = os.Getenv("CLOUD_BUCKET")
 	exitVal := m.Run()
 	log.Println("Completed export testing suite!")
 	os.Exit(exitVal)
 }
 
-func Test_saveCSVLocal(t *testing.T) {
-	records := internal.ToCSV(data)
-	test := "test"
-	err := SaveCSV(records, test, test)
+func TestExportLocalCSV(t *testing.T) {
+	err := local.Write(records, test, test)
 	internal.Check(t, err)
 
-	got := OpenCSV(test, test)
+	// Read and assert everything is correct
+	file := local.CreateFilepath(test, test)
+	got, err := local.Read(file)
+	internal.Check(t, err)
+	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	// Cleanup
+	err = os.Remove(file)
+	internal.Check(t, err)
+	err = os.Remove(local.CreateDirpath(test))
+	internal.Check(t, err)
+}
 
+func TestExportStorageCSV(t *testing.T) {
+	var s storage.Storage
+	err := s.Init(bucket)
+	internal.Check(t, err)
+	path := storage.Path(test, test)
+	err = s.Write(path, file, records)
+	internal.Check(t, err)
+
+	// Read and assert everything is correct
+	path := storage.Path(test, test)
+	got, err := s.Read(path)
+	internal.Check(t, err)
 	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
 	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 
-	err = os.Remove(createFilepath(test, test))
-	internal.Check(t, err)
-	err = os.Remove(createDirpath(test))
+	// Cleanup
+	// TODO remove test file from GCP
+	err = s.Delete(path)
 	internal.Check(t, err)
 }
