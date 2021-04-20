@@ -16,7 +16,7 @@ type Storage struct {
 	ctx context.Context
 }
 
-func (s Storage) Init(bucket string) error{
+func (s Storage) Init(bucket string) error {
 	// TODO ctx.Timeout?
 	s.ctx = context.Background()
 	client, err := gcp.NewClient(s.ctx)
@@ -27,9 +27,7 @@ func (s Storage) Init(bucket string) error{
 	return nil
 }
 
-// todo: records should either be formatedd or formated inside?
-// TODO pass already written file and copy it
-func (s Storage) Write(path string, file *os.File, records [][]string) error {
+func (s Storage) Write(file *os.File, path string) error {
 	obj := s.bkt.Object(path)
 	w := obj.NewWriter(s.ctx)
 	if _, err := io.Copy(w, file); err != nil {
@@ -57,12 +55,12 @@ func (s Storage) Read(filepath string) ([][]string, error) {
 		return nil, err
 	}
 	// TODO: Logging
-	 // fmt.Fprintf(w, "Read b %v uploaded.\n", path)
+	// fmt.Fprintf(w, "Read b %v uploaded.\n", path)
 	return records, nil
 }
 
 // Delete the folder/file
-func (s Storage) Delete( filepath string) error {
+func (s Storage) Delete(filepath string) error {
 	obj := s.bkt.Object(filepath)
 	err := obj.Delete(s.ctx)
 	if err != nil {

@@ -50,8 +50,7 @@ var (
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
 	records = internal.ToCSV(data)
-	CreateTempFile()
-	if err := godotenv.Load(fmt.Sprintf("%s/.env",projectpath.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
 	bucket = os.Getenv("CLOUD_BUCKET")
@@ -61,32 +60,46 @@ func TestMain(m *testing.M) {
 }
 
 func TestExportLocalCSV(t *testing.T) {
-	err := local.Write(records, test, test)
+	file, err := CreateTempCSV(records)
+	internal.Check(t, err)
+	defer file.Close()
+	defer os.Remove(file.Name())
+
+	err = local.Write(file, test, test)
 	internal.Check(t, err)
 
 	// Read and assert everything is correct
-	file := local.CreateFilepath(test, test)
-	got, err := local.Read(file)
+	path := local.CreateFilepath(test, test)
+	got, err := local.Read(path)
 	internal.Check(t, err)
-	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	if len(got) > 1 {
+		internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+		internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	} else {
+		t.Errorf("Read 0 records from file")
+	}
+
 	// Cleanup
-	err = os.Remove(file)
+	err = os.Remove(path)
 	internal.Check(t, err)
 	err = os.Remove(local.CreateDirpath(test))
 	internal.Check(t, err)
 }
 
 func TestExportStorageCSV(t *testing.T) {
+	file, err := CreateTempCSV(records)
+	internal.Check(t, err)
+	defer file.Close()
+	defer os.Remove(file.Name())
+
 	var s storage.Storage
-	err := s.Init(bucket)
+	err = s.Init(bucket)
 	internal.Check(t, err)
 	path := storage.Path(test, test)
-	err = s.Write(path, file, records)
+	err = s.Write(file, path)
 	internal.Check(t, err)
 
 	// Read and assert everything is correct
-	path := storage.Path(test, test)
 	got, err := s.Read(path)
 	internal.Check(t, err)
 	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
