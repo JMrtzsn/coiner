@@ -44,6 +44,7 @@ var data = []internal.OHLCV{
 var (
 	records [][]string
 	test    = "test"
+	bucket string
 )
 
 func TestMain(m *testing.M) {
@@ -52,8 +53,13 @@ func TestMain(m *testing.M) {
 	if err := godotenv.Load(fmt.Sprintf("%s/.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
-	os.LookupEnv("CLOUD_BUCKET")
-	os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
+
+	var ok bool
+	bucket, ok = os.LookupEnv("CLOUD_BUCKET")
+	if !ok{
+		panic("Invalid env vars")
+	}
+
 	exitVal := m.Run()
 	log.Println("Completed export testing suite!")
 	os.Exit(exitVal)
@@ -92,7 +98,7 @@ func TestExportStorageCSV(t *testing.T) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	s, err := storage.Init("chrysopoeia_coin_data")
+	s, err := storage.Init(bucket)
 	internal.Check(t, err)
 
 	path := storage.Path(test, test)
