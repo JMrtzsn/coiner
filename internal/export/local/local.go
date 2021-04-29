@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+var projectID = "YOUR_PROJECT_ID"
+
 func Read(file string) ([][]string, error) {
 	// TODO read from byte?
 	csvfile, err := os.Open(file)

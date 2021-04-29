@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 type Storage struct {
@@ -16,36 +17,45 @@ type Storage struct {
 	ctx context.Context
 }
 
-func (s Storage) Init(bucket string) error {
+func Init(bucket string) (*Storage, error) {
 	// TODO ctx.Timeout?
-	s.ctx = context.Background()
-	client, err := gcp.NewClient(s.ctx)
+	ctx := context.Background()
+	client, err := gcp.NewClient(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s.bkt = *client.Bucket(bucket)
-	return nil
+
+	// TODO assert bucket exist if not create
+	bkt := *client.Bucket(bucket)
+
+	return &Storage{
+		bkt: bkt,
+		ctx: ctx,
+	}, nil
 }
 
 func (s Storage) Write(file *os.File, path string) error {
-	obj := s.bkt.Object(path)
-	w := obj.NewWriter(s.ctx)
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*50)
+	defer cancel()
+
+	w := s.bkt.Object(path).NewWriter(ctx)
 	if _, err := io.Copy(w, file); err != nil {
-		return err
+		return fmt.Errorf("io.Copy: %v", err)
 	}
 	if err := w.Close(); err != nil {
-		return err
+		return fmt.Errorf("Writer.Close: %v", err)
 	}
-	// TODO: Logging
-	// fmt.Fprintf(w, "File b %v uploaded.\n", path)
 	return nil
 }
 
 // TODO: pass fileformat?
 // Read the object as csv
 func (s Storage) Read(filepath string) ([][]string, error) {
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*50)
+	defer cancel()
+
 	obj := s.bkt.Object(filepath)
-	r, err := obj.NewReader(s.ctx)
+	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, err
 	}

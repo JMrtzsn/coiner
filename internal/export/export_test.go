@@ -44,7 +44,6 @@ var data = []internal.OHLCV{
 var (
 	records [][]string
 	test    = "test"
-	bucket  = os.Getenv("CLOUD_BUCKET")
 )
 
 func TestMain(m *testing.M) {
@@ -53,7 +52,8 @@ func TestMain(m *testing.M) {
 	if err := godotenv.Load(fmt.Sprintf("%s/.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
-	bucket = os.Getenv("CLOUD_BUCKET")
+	os.LookupEnv("CLOUD_BUCKET")
+	os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
 	exitVal := m.Run()
 	log.Println("Completed export testing suite!")
 	os.Exit(exitVal)
@@ -92,9 +92,9 @@ func TestExportStorageCSV(t *testing.T) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	var s storage.Storage
-	err = s.Init(bucket)
+	s, err := storage.Init("chrysopoeia_coin_data")
 	internal.Check(t, err)
+
 	path := storage.Path(test, test)
 	err = s.Write(file, path)
 	internal.Check(t, err)
@@ -102,8 +102,12 @@ func TestExportStorageCSV(t *testing.T) {
 	// Read and assert everything is correct
 	got, err := s.Read(path)
 	internal.Check(t, err)
-	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	if len(got) > 1 {
+		internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+		internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	} else {
+		t.Errorf("Read 0 records from file")
+	}
 
 	// Cleanup
 	// TODO remove test file from GCP

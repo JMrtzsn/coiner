@@ -13,6 +13,7 @@ type Export interface {
 	Read()
 }
 
+// TODO return buffer
 // CreateTempCSV create a temp CSV file from records
 func CreateTempCSV(records [][]string) (*os.File, error) {
 	file, err := ioutil.TempFile("", "file")
@@ -23,6 +24,7 @@ func CreateTempCSV(records [][]string) (*os.File, error) {
 	err = w.WriteAll(records)
 
 	// Seek the pointer to the beginning
+	// TODO return buffer? function that resets file when reading
 	file.Seek(0, 0)
 	return file, nil
 }
