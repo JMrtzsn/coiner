@@ -1,9 +1,10 @@
-package storage
+package export
 
 import (
 	gcp "cloud.google.com/go/storage"
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
@@ -12,33 +13,44 @@ import (
 	"time"
 )
 
+const timeout = 50
+
+// Storage type struct
 type Storage struct {
 	bkt gcp.BucketHandle
 	ctx context.Context
+	path string
 }
 
-func Init(bucket string) (*Storage, error) {
-	// TODO ctx.Timeout?
-	ctx := context.Background()
+// newStorage is the constructor for Storage
+func newStorage(ctx context.Context, symbol, date string) (*Storage, error) {
+	path := PathCSV(symbol, date)
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO assert bucket exist if not create
+	bucket, ok := os.LookupEnv("CLOUD_BUCKET")
+	if !ok{
+		return nil, errors.New("invalid env var")
+	}
 	bkt := *client.Bucket(bucket)
 
 	return &Storage{
 		bkt: bkt,
 		ctx: ctx,
+		path: path,
 	}, nil
 }
 
-func (s Storage) Write(file *os.File, path string) error {
-	ctx, cancel := context.WithTimeout(s.ctx, time.Second*50)
+// Write copies a file to gcp path
+func (s Storage) Export(file *os.File) error {
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
 	defer cancel()
 
-	w := s.bkt.Object(path).NewWriter(ctx)
+	w := s.bkt.Object(s.path).NewWriter(ctx)
+	file.Seek(0, 0)
 	if _, err := io.Copy(w, file); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)
 	}
@@ -50,11 +62,11 @@ func (s Storage) Write(file *os.File, path string) error {
 
 // TODO: pass fileformat?
 // Read the object as csv
-func (s Storage) Read(filepath string) ([][]string, error) {
-	ctx, cancel := context.WithTimeout(s.ctx, time.Second*50)
+func (s Storage) Read() ([][]string, error) {
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
 	defer cancel()
 
-	obj := s.bkt.Object(filepath)
+	obj := s.bkt.Object(s.path)
 	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, err
@@ -78,6 +90,7 @@ func (s Storage) Delete(filepath string) error {
 	}
 	return nil
 }
+// List all files
 func (s Storage) List() []string {
 	// Optional Query filter, defaults a,b,c..
 	query := &gcp.Query{Prefix: ""}
@@ -97,8 +110,3 @@ func (s Storage) List() []string {
 	return names
 }
 
-// TODO:
-// Should create folder symbol, and filename name: BTCUSDT/2019-01-01.csv
-func Path(symbol, name string) string {
-	return fmt.Sprintf("%s/%s.csv", symbol, name)
-}

@@ -5,6 +5,7 @@ import (
 	"github.com/jmrtzsn/coiner/internal/exchanges/binance"
 )
 
+// TODO move to exchanges? - command pattern here to?
 // Exchange is the external interface coiner uses to structure exchanges
 type Exchange interface {
 	// Init ENV stuff

@@ -1,30 +1,68 @@
 package export
 
 import (
-	"encoding/csv"
-	"io/ioutil"
+	"context"
+	"fmt"
+	"github.com/jmrtzsn/coiner/internal"
 	"os"
 )
 
-// TODO: create export ... interface? or struct a common gateway to all exports
-// TODO should contain common functions used..? by downstream packages? or have those packages further down?
-type Export interface {
-	Export()
-	Read()
+// Command Command pattern
+type Command interface {
+	Export(*os.File) error
 }
 
-// TODO return buffer
-// CreateTempCSV create a temp CSV file from records
-func CreateTempCSV(records [][]string) (*os.File, error) {
-	file, err := ioutil.TempFile("", "file")
-	if err != nil {
-		return nil, err
-	}
-	w := csv.NewWriter(file)
-	err = w.WriteAll(records)
+// TODO Implement command pattern
+// Ensure the handlers implement the required interfaces/types at compile time
+var (
+	_ Command = &Local{}
+	_ Command = &Storage{}
+)
 
-	// Seek the pointer to the beginning
-	// TODO return buffer? function that resets file when reading
-	file.Seek(0, 0)
-	return file, nil
+// Export to outputs [local, storage]
+// TODO add format options
+func Export(ctx context.Context, data []internal.OHLCV, outputs []string, symbol, date string) error {
+	records := internal.ToCSV(data)
+
+	// TODO pass commands as arg?
+	exports, err2 := makeCommands(ctx, outputs, symbol, date)
+	if err2 != nil {
+		return err2
+	}
+
+	file, err := CreateTempCSV(records)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	defer os.Remove(file.Name())
+
+	for _, c := range exports {
+		if err := c.Export(file); err != nil {
+			// TODO log why export failed, try again on scenarios redundancy
+			fmt.Printf("Failed to export: %s", err)
+		}
+	}
+	return nil
+}
+
+func makeCommands(ctx context.Context, outputs []string, symbol string, date string) ([]Command, error) {
+	var exports []Command
+	for _, output := range outputs {
+		switch output {
+		case "local":
+			local := newLocal(symbol, date)
+			exports = append(exports, local)
+		case "csv":
+			storage, err := newStorage(ctx, symbol, date)
+			if err != nil {
+				return nil, err
+			}
+			exports = append(exports, storage)
+		default:
+			// TODO
+			fmt.Printf("Recieved invalid command option %s", output)
+		}
+	}
+	return exports, nil
 }
