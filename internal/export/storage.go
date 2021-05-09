@@ -23,8 +23,7 @@ type Storage struct {
 }
 
 // newStorage is the constructor for Storage
-func newStorage(ctx context.Context, symbol, date string) (*Storage, error) {
-	path := PathCSV(symbol, date)
+func newStorage(ctx context.Context, path string) (*Storage, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err

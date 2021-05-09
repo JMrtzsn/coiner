@@ -4,22 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
-	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/model"
 	"strconv"
 	"time"
 )
 
 type Binance struct {
 	client binance.Client
-	config Config
 }
 
 // -------------- Interface functions  -----------------
 
 // Init loads env variables and creates a binance rest client
-func (e *Binance) Init() {
-	e.config.LoadEnv()
-	e.client = *binance.NewClient(e.config.apiKey, e.config.apiSecret)
+func (e *Binance) Init(apiKey, apiSecret string) {
+	e.client = *binance.NewClient(apiKey, apiSecret)
 }
 
 // OHLCV validats and parses inputs.
@@ -29,7 +27,7 @@ func (e *Binance) Init() {
 // start: datetime ISO RFC3339 - "2020-04-04 T12:07:00"
 // end: UNIX datetime - 1499040000000
 // limit: rows returned - 10
-func (e *Binance) OHLCV(symbol string, interval, start, end string) ([]internal.OHLCV, error) {
+func (e *Binance) OHLCV(symbol string, interval, start, end string) ([]model.OHLCV, error) {
 	startTS, err := isoToUnix(start)
 	if err != nil {
 		return nil, err
@@ -61,13 +59,13 @@ func unixToISO(date int64) string {
 	return dt.UTC().Format(time.RFC3339)
 }
 
-func toOHLCV(blines []*binance.Kline) []internal.OHLCV {
-	var ohlcvs []internal.OHLCV
+func toOHLCV(blines []*binance.Kline) []model.OHLCV {
+	var ohlcvs []model.OHLCV
 	for _, b := range blines {
 
 		dt := unixToISO(b.OpenTime)
 		ts := strconv.Itoa(int(b.OpenTime) / 1000)
-		o := internal.OHLCV{
+		o := model.OHLCV{
 			DATE:   dt,
 			TS:     ts,
 			OPEN:   b.Open,

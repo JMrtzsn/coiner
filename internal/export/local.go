@@ -2,6 +2,7 @@ package export
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 )
@@ -34,13 +35,13 @@ func (l Local) Read(file string) ([][]string, error) {
 
 func (l Local) Export(input *os.File) error {
 	output, err := func() (*os.File, error) {
-		dir := dirpath(l.symbol)
+		dir := dirPath(l.symbol)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 				return nil, err
 			}
 		}
-		output, err := os.Create(filepath(l.symbol, l.date))
+		output, err := os.Create(dir + fmt.Sprintf("%s.csv", l.symbol))
 		if err != nil {
 			return nil, err
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/model"
 	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/joho/godotenv"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"testing"
 )
 
-var data = []internal.OHLCV{
+var data = []model.OHLCV{
 	{
 		DATE:   "2020-04-04T12:00:00Z",
 		TS:     "1586001600",
@@ -47,7 +48,7 @@ var (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
-	records = internal.ToCSV(data)
+	records = model.ToCSV(data)
 	if err := godotenv.Load(fmt.Sprintf("%s/.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +68,7 @@ func TestExportLocalCSV(t *testing.T) {
 	internal.Check(t, err)
 
 	// Read and assert everything is correct
-	path := filepath(test, test)
+	path := dirPath(test) + fmt.Sprintf("%s.csv", test)
 	got, err := l.Read(path)
 	internal.Check(t, err)
 	if len(got) > 1 {
@@ -80,7 +81,7 @@ func TestExportLocalCSV(t *testing.T) {
 	// Cleanup
 	err = os.Remove(path)
 	internal.Check(t, err)
-	err = os.Remove(dirpath(test))
+	err = os.Remove(dirPath(test))
 	internal.Check(t, err)
 }
 
@@ -91,7 +92,7 @@ func TestExportStorageCSV(t *testing.T) {
 	defer os.Remove(file.Name())
 
 	ctx := context.Background()
-	storage, err := newStorage(ctx, test, test)
+	storage, err := newStorage(ctx, storagePath(test, test))
 	internal.Check(t, err)
 
 	err = storage.Export(file)

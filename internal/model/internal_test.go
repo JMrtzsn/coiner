@@ -1,6 +1,7 @@
-package internal
+package model
 
 import (
+	"github.com/jmrtzsn/coiner/internal"
 	"log"
 	"os"
 	"testing"
@@ -37,20 +38,20 @@ var data = []OHLCV{
 }
 
 func TestMain(m *testing.M) {
-	log.Println("Setting up internal testing suite!")
+	log.Println("Setting up model testing suite!")
 	exitVal := m.Run()
-	log.Println("Completed internal testing suite!")
+	log.Println("Completed model testing suite!")
 	os.Exit(exitVal)
 }
 
 func TestCSV(t *testing.T) {
 	want := []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"}
 	got := data[0].csv()
-	Compare(t, got, want)
+	internal.Compare(t, got, want)
 }
 
 func TestToCSV(t *testing.T) {
 	got := ToCSV(data)
-	Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-	Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 }

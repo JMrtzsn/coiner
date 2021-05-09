@@ -3,7 +3,7 @@ package export
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/model"
 	"os"
 )
 
@@ -21,15 +21,8 @@ var (
 
 // Export to outputs [local, storage]
 // TODO add format options
-func Export(ctx context.Context, data []internal.OHLCV, outputs []string, symbol, date string) error {
-	records := internal.ToCSV(data)
-
-	// TODO pass commands as arg?
-	exports, err2 := makeCommands(ctx, outputs, symbol, date)
-	if err2 != nil {
-		return err2
-	}
-
+func Export(commands []Command, data []model.OHLCV) error {
+	records := model.ToCSV(data)
 	file, err := CreateTempCSV(records)
 	if err != nil {
 		return err
@@ -37,24 +30,24 @@ func Export(ctx context.Context, data []internal.OHLCV, outputs []string, symbol
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	for _, c := range exports {
+	for _, c := range commands {
 		if err := c.Export(file); err != nil {
-			// TODO log why export failed, try again on scenarios redundancy
+			// TODO log why export failed, try again on scenarios + redundancy
 			fmt.Printf("Failed to export: %s", err)
 		}
 	}
 	return nil
 }
 
-func makeCommands(ctx context.Context, outputs []string, symbol string, date string) ([]Command, error) {
+func Commands(ctx context.Context, outputs []string, symbol string, date string) ([]Command, error) {
 	var exports []Command
 	for _, output := range outputs {
 		switch output {
 		case "local":
 			local := newLocal(symbol, date)
 			exports = append(exports, local)
-		case "csv":
-			storage, err := newStorage(ctx, symbol, date)
+		case "storage":
+			storage, err := newStorage(ctx, storagePath(symbol, date))
 			if err != nil {
 				return nil, err
 			}

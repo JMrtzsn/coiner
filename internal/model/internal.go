@@ -1,5 +1,5 @@
 // Contains common exchange structs, interfaces used as internal API for sub-packages
-package internal
+package model
 
 // OHLCV is the main communications struct for downloading historical data
 // OPEN, HIGH, LOW, CLOSE and VOLUME

@@ -2,6 +2,7 @@ package binance
 
 import (
 	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/model"
 	"log"
 	"os"
 	"testing"
@@ -9,7 +10,7 @@ import (
 
 var b = Binance{}
 
-var res = internal.OHLCV{
+var res = model.OHLCV{
 	DATE:   "2020-04-04T12:00:00Z",
 	TS:     "1586001600",
 	OPEN:   "6696.68000000",
@@ -21,13 +22,13 @@ var res = internal.OHLCV{
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up binance exchange testing suite!")
-	b.Init()
+	b.Init("TEST", "TEST")
 	exitVal := m.Run()
 	log.Println("Completed binance exchange testing suite!")
 	os.Exit(exitVal)
 }
 
-func Test_isoToUnix(t *testing.T) {
+func TestIsoToUnix(t *testing.T) {
 	input := "2020-04-04T12:07:00Z"
 	var want int64 = 1586002020000
 	got, err := isoToUnix(input)
@@ -35,14 +36,15 @@ func Test_isoToUnix(t *testing.T) {
 	internal.Compare(t, got, want)
 }
 
-func Test_unixToISO(t *testing.T) {
+func TestUnixToISO(t *testing.T) {
 	var input int64 = 1586002020000
 	var want = "2020-04-04T12:07:00Z"
 	got := unixToISO(input)
 	internal.Compare(t, got, want)
 }
 
-func TestBinance_OHLCV(t *testing.T) {
+// Uses the public api key / secret doesnt matter
+func TestOHLCV(t *testing.T) {
 	start := "2020-04-04T12:00:00+00:00"
 	end := "2020-04-04T12:59:00+00:00"
 	got, err := b.OHLCV("BTCUSDT", "1m", start, end)
