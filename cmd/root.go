@@ -1,8 +1,10 @@
 package cmd
 
 import (
-	"github.com/joho/godotenv"
+	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"log"
 )
 
@@ -17,13 +19,18 @@ var (
 	Output []string
 )
 
+type config struct {
+	Port int
+	Name string
+	PathMap string `mapstructure:"path_map"`
+}
+
 var (
+	C config
+	cfgFile     string
 	rootCmd = &cobra.Command{
 		Use:   "coiner",
 		Short: "A common interface for popular crypto exchanges",
-		Run: func(cmd *cobra.Command, args []string) {
-
-		},
 	}
 )
 
@@ -33,8 +40,8 @@ func Execute() error {
 }
 
 func init() {
-	cobra.OnInitialize(loadEnvs)
-	rootCmd.Flags().StringVarP(&Exchange, "exchange", "r", "", "Exchange (required)")
+	cobra.OnInitialize(initConfig)
+	rootCmd.Flags().StringVarP(&Exchange, "exchange", "e", "", "Exchange (required)")
 	rootCmd.MarkFlagRequired("exchange")
 	rootCmd.Flags().StringVarP(&Interval, "interval", "r", "", "Interval (optional) defaults to 1min")
 
@@ -50,10 +57,41 @@ func init() {
 
 }
 // TODO viper config -> load standard download stuff
+// unmarshal json/yaml into config file use across project
 
-func loadEnvs() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+func initConfig() {
+
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+
+
+
+		err := viper.Unmarshal(&C)
+		if err != nil {
+			log.Fatal("unable to decode into struct, %v", err)
+		}
+	} else {
+		// Find home directory.
+		home, err := homedir.Dir()
+		cobra.CheckErr(err)
+
+		// Search config in home directory with name ".cobra" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigName(".cobra")
+	}
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }
+
+//
+//func loadEnvs() {
+//	err := godotenv.Load()
+//	if err != nil {
+//		log.Fatal("Error loading .env file")
+//	}
+//}

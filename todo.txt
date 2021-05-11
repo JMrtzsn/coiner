@@ -3,4 +3,3 @@ Design doc:
 - Example usecase:
     - create an binance interface
     - call methods on interface, data is returned as is
-    - methods should be concurrent
