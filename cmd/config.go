@@ -6,14 +6,21 @@ import (
 	"log"
 )
 
+// Config contain program input (loaded from env or input vars)
 type Config struct {
-	Port    int
-	Name    string
-	PathMap string `mapstructure:"path_map"`
+	// TODO create valid types (enums?) for vars (no checking?)
+	// TODO: API_KEYS MAP? - Exchange object
+	Exchanges []string
+	Interval string
+	Symbols []string // TODO create valid symbol (enum?(
+	Output []string
+	From string
+	To string
+
 }
 
 // TODO read ENV vars and load into config
-func InitConfig()*Config {
+func InitConfig() *Config {
 	viper.SetConfigName(".env")
 	viper.AddConfigPath(projectpath.Root)
 
@@ -25,10 +32,10 @@ func InitConfig()*Config {
 		}
 	}
 
-	var config Config
-	err := viper.Unmarshal(&config)
+	config := &Config{}
+	err := viper.Unmarshal(config)
 	if err != nil {
 		log.Fatal("unable to decode config into struct, %v", err)
 	}
-
+	return config
 }

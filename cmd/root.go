@@ -30,7 +30,7 @@ func Execute() error {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize()
 	setupFlags(rootCmd)
 }
 
@@ -51,11 +51,3 @@ func setupFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().StringVarP(&From, "from", "r", "", "From: 2019-01-01 (defaults to today)")
 	rootCmd.Flags().StringVarP(&To, "to", "r", "", "To: 2019-01-01 (defaults to today)")
 }
-
-//
-//func loadEnvs() {
-//	err := godotenv.Load()
-//	if err != nil {
-//		log.Fatal("Error loading .env file")
-//	}
-//}

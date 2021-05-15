@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/jmrtzsn/coiner/internal"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
@@ -47,11 +47,11 @@ func TestMain(m *testing.M) {
 func TestCSV(t *testing.T) {
 	want := []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"}
 	got := data[0].csv()
-	internal.Compare(t, got, want)
+	assert.Equal(t, got, want)
 }
 
 func TestToCSV(t *testing.T) {
 	got := ToCSV(data)
-	internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-	internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+	assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+	assert.Equal(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 }

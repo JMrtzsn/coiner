@@ -3,10 +3,10 @@ package export
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal"
 	"github.com/jmrtzsn/coiner/internal/model"
 	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
@@ -60,50 +60,52 @@ func TestMain(m *testing.M) {
 func TestExportLocalCSV(t *testing.T) {
 	file, err := CreateTempCSV(records)
 	l := newLocal(test, test)
-	internal.Check(t, err)
+	assert.Nil(t, err)
+
 	defer file.Close()
 	defer os.Remove(file.Name())
 
 	err = l.Export(file)
-	internal.Check(t, err)
+	assert.Nil(t, err)
 
 	// Read and assert everything is correct
 	path := dirPath(test) + fmt.Sprintf("%s.csv", test)
 	got, err := l.Read(path)
-	internal.Check(t, err)
+	assert.Nil(t, err)
+
 	if len(got) > 1 {
-		internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-		internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+		assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+		assert.Equal(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 	} else {
 		t.Errorf("Read 0 records from file")
 	}
 
 	// Cleanup
 	err = os.Remove(path)
-	internal.Check(t, err)
+	assert.Nil(t, err)
 	err = os.Remove(dirPath(test))
-	internal.Check(t, err)
+	assert.Nil(t, err)
 }
 
 func TestExportStorageCSV(t *testing.T) {
 	file, err := CreateTempCSV(records)
-	internal.Check(t, err)
+	assert.Nil(t, err)
 	defer file.Close()
 	defer os.Remove(file.Name())
 
 	ctx := context.Background()
 	storage, err := newStorage(ctx, storagePath(test, test))
-	internal.Check(t, err)
+	assert.Nil(t, err)
 
 	err = storage.Export(file)
-	internal.Check(t, err)
+	assert.Nil(t, err)
 
 	// Read and assert everything is correct
 	got, err := storage.Read()
-	internal.Check(t, err)
+	assert.Nil(t, err)
 	if len(got) > 1 {
-		internal.Compare(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-		internal.Compare(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
+		assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+		assert.Equal(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 	} else {
 		t.Errorf("Read 0 records from gcp storage")
 	}
@@ -111,5 +113,5 @@ func TestExportStorageCSV(t *testing.T) {
 	// Cleanup
 	// TODO remove test file from GCP
 	err = storage.Delete(storage.path)
-	internal.Check(t, err)
+	assert.Nil(t, err)
 }
