@@ -3,6 +3,7 @@ package export
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"io"
 	"os"
 )
@@ -55,4 +56,9 @@ func (l Local) Export(input *os.File, date string) error {
 		return err
 	}
 	return nil
+}
+
+func dirPath(exchange, symbol string) string {
+	// TODO filepath.Join()
+	return fmt.Sprintf("%s/data/%s/%s", projectpath.Root, exchange, symbol)
 }

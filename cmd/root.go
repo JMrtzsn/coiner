@@ -39,15 +39,15 @@ func init() {
 func setupFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().StringVarP(&Exchange, "exchange", "e", "", "Exchange (required)")
 	rootCmd.MarkFlagRequired("exchange")
-	rootCmd.Flags().StringVarP(&Interval, "interval", "r", "", "Interval (optional) defaults to 1min")
+	rootCmd.Flags().StringVarP(&Interval, "interval", "i", "", "Interval (optional) defaults to 1min")
 
-	rootCmd.Flags().StringSlice("Symbol", Symbol, "comma separated symbol list: BTCUSDT, ETHUSD")
+	rootCmd.Flags().StringSlice("symbol", Symbol, "comma separated symbol list: BTCUSDT, ETHUSD")
 	rootCmd.MarkFlagRequired("symbol")
 
-	rootCmd.Flags().StringSlice("Output", Output, "comma separated output list: local, storage")
+	rootCmd.Flags().StringSlice("output", Output, "comma separated output list: local, storage")
 	rootCmd.MarkFlagRequired("output")
 
 	// Defaults to today
-	rootCmd.Flags().StringVarP(&From, "from", "r", "", "From: 2019-01-01 (defaults to today)")
-	rootCmd.Flags().StringVarP(&To, "to", "r", "", "To: 2019-01-01 (defaults to today)")
+	rootCmd.Flags().StringVarP(&From, "from", "f", "", "From: 2019-01-01 (defaults to today)")
+	rootCmd.Flags().StringVarP(&To, "to", "t", "", "To: 2019-01-01 (defaults to today)")
 }

@@ -16,8 +16,8 @@ type Binance struct {
 // -------------- Interface functions  -----------------
 
 // Init loads env variables and creates a binance rest client
-func (e *Binance) Init(apiKey, apiSecret string) {
-	e.client = *binance.NewClient(apiKey, apiSecret)
+func (e *Binance) Init(key, secret string) {
+	e.client = *binance.NewClient(key, secret)
 }
 
 // OHLCV validats and parses inputs.

@@ -8,7 +8,7 @@ import (
 // Exchange common interface for exchanges should they be implemented
 type Exchange interface {
 	// Init ENV stuff
-	Init(apiKey, apiSecret string)
+	Init(key, secret string)
 	// OHLCV downloads and converts whatever the API exposes to a uniform format
 	OHLCV(symbol string, interval, start, end string) ([]model.OHLCV, error)
 	// Download breaks up a longer intervals into manageable chunks

@@ -17,8 +17,8 @@ const timeout = 50
 
 // Storage type struct
 type Storage struct {
-	bkt gcp.BucketHandle
-	ctx context.Context
+	bkt      gcp.BucketHandle
+	ctx      context.Context
 	exchange string
 	symbol   string
 }
@@ -32,16 +32,16 @@ func newStorage(ctx context.Context, exchange, symbol string) (*Storage, error) 
 
 	// TODO assert bucket exist if not create
 	bucket, ok := os.LookupEnv("CLOUD_BUCKET")
-	if !ok{
+	if !ok {
 		return nil, errors.New("invalid env var")
 	}
 	bkt := *client.Bucket(bucket)
 
 	return &Storage{
-		bkt: bkt,
-		ctx: ctx,
+		bkt:      bkt,
+		ctx:      ctx,
 		exchange: exchange,
-		symbol: symbol,
+		symbol:   symbol,
 	}, nil
 }
 
@@ -111,7 +111,6 @@ func (s Storage) List() []string {
 	}
 	return names
 }
-
 
 // storagePath generates a folder/file.csv
 func storagePath(exchange, symbol, name string) string {

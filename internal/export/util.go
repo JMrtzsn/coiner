@@ -2,8 +2,6 @@ package export
 
 import (
 	"encoding/csv"
-	"fmt"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"io/ioutil"
 	"os"
 )
@@ -21,9 +19,4 @@ func CreateTempCSV(records [][]string) (*os.File, error) {
 	// TODO return buffer? function that resets file when reading
 	file.Seek(0, 0)
 	return file, nil
-}
-
-func dirPath(exchange, symbol string) string {
-	// TODO filepath.Join()
-	return fmt.Sprintf("%s/data/%s/%s", projectpath.Root, exchange, symbol)
 }
