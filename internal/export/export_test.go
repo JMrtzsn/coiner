@@ -65,11 +65,11 @@ func TestExportLocalCSV(t *testing.T) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	err = l.Export(file)
+	err = l.Export(file, test)
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	path := dirPath(test) + fmt.Sprintf("%s.csv", test)
+	path := dirPath(test, test) + fmt.Sprintf("%s.csv", test)
 	got, err := l.Read(path)
 	assert.Nil(t, err)
 
@@ -83,7 +83,7 @@ func TestExportLocalCSV(t *testing.T) {
 	// Cleanup
 	err = os.Remove(path)
 	assert.Nil(t, err)
-	err = os.Remove(dirPath(test))
+	err = os.Remove(dirPath(test, test))
 	assert.Nil(t, err)
 }
 
@@ -94,14 +94,14 @@ func TestExportStorageCSV(t *testing.T) {
 	defer os.Remove(file.Name())
 
 	ctx := context.Background()
-	storage, err := newStorage(ctx, storagePath(test, test))
+	storage, err := newStorage(ctx, test, test)
 	assert.Nil(t, err)
 
-	err = storage.Export(file)
+	err = storage.Export(file, test)
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	got, err := storage.Read()
+	got, err := storage.Read(test)
 	assert.Nil(t, err)
 	if len(got) > 1 {
 		assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
@@ -112,6 +112,6 @@ func TestExportStorageCSV(t *testing.T) {
 
 	// Cleanup
 	// TODO remove test file from GCP
-	err = storage.Delete(storage.path)
+	err = storage.Delete(storagePath(test,test,test))
 	assert.Nil(t, err)
 }

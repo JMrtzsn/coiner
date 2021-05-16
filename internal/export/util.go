@@ -23,12 +23,7 @@ func CreateTempCSV(records [][]string) (*os.File, error) {
 	return file, nil
 }
 
-func dirPath(symbol string) string {
+func dirPath(exchange, symbol string) string {
 	// TODO filepath.Join()
-	return fmt.Sprintf("%s/data/%s/", projectpath.Root, symbol)
-}
-
-// storagePath generates a folder/file.csv
-func storagePath(symbol, name string) string {
-	return fmt.Sprintf("%s/%s.csv", symbol, name)
+	return fmt.Sprintf("%s/data/%s/%s", projectpath.Root, exchange, symbol)
 }

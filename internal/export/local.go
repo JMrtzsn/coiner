@@ -8,14 +8,14 @@ import (
 )
 
 type Local struct {
-	symbol string
-	date   string
+	exchange string
+	symbol   string
 }
 
-func newLocal(symbol, date string) *Local {
+func newLocal(exchange, symbol string) *Local {
 	return &Local{
+		exchange: exchange,
 		symbol: symbol,
-		date:   date,
 	}
 }
 
@@ -33,15 +33,15 @@ func (l Local) Read(file string) ([][]string, error) {
 	return records, nil
 }
 
-func (l Local) Export(input *os.File) error {
+func (l Local) Export(input *os.File, date string) error {
 	output, err := func() (*os.File, error) {
-		dir := dirPath(l.symbol)
+		dir := dirPath(l.exchange, l.symbol)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 				return nil, err
 			}
 		}
-		output, err := os.Create(dir + fmt.Sprintf("%s.csv", l.symbol))
+		output, err := os.Create(dir + fmt.Sprintf("%s.csv", date))
 		if err != nil {
 			return nil, err
 		}

@@ -19,11 +19,12 @@ const timeout = 50
 type Storage struct {
 	bkt gcp.BucketHandle
 	ctx context.Context
-	path string
+	exchange string
+	symbol   string
 }
 
 // newStorage is the constructor for Storage
-func newStorage(ctx context.Context, path string) (*Storage, error) {
+func newStorage(ctx context.Context, exchange, symbol string) (*Storage, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
@@ -39,16 +40,17 @@ func newStorage(ctx context.Context, path string) (*Storage, error) {
 	return &Storage{
 		bkt: bkt,
 		ctx: ctx,
-		path: path,
+		exchange: exchange,
+		symbol: symbol,
 	}, nil
 }
 
-// Write copies a file to gcp path
-func (s Storage) Export(file *os.File) error {
+func (s Storage) Export(file *os.File, date string) error {
 	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
 	defer cancel()
 
-	w := s.bkt.Object(s.path).NewWriter(ctx)
+	path := storagePath(s.exchange, s.symbol, date)
+	w := s.bkt.Object(path).NewWriter(ctx)
 	file.Seek(0, 0)
 	if _, err := io.Copy(w, file); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)
@@ -60,12 +62,12 @@ func (s Storage) Export(file *os.File) error {
 }
 
 // TODO: pass fileformat?
-// Read the object as csv
-func (s Storage) Read() ([][]string, error) {
+func (s Storage) Read(date string) ([][]string, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
 	defer cancel()
 
-	obj := s.bkt.Object(s.path)
+	path := storagePath(s.exchange, s.symbol, date)
+	obj := s.bkt.Object(path)
 	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, err
@@ -89,6 +91,7 @@ func (s Storage) Delete(filepath string) error {
 	}
 	return nil
 }
+
 // List all files
 func (s Storage) List() []string {
 	// Optional Query filter, defaults a,b,c..
@@ -109,3 +112,8 @@ func (s Storage) List() []string {
 	return names
 }
 
+
+// storagePath generates a folder/file.csv
+func storagePath(exchange, symbol, name string) string {
+	return fmt.Sprintf("%s/%s/%s.csv", exchange, symbol, name)
+}
