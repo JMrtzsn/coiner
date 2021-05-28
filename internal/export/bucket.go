@@ -16,15 +16,15 @@ import (
 const timeout = 50
 
 // Storage type struct
-type Storage struct {
+type Bucket struct {
 	bkt      gcp.BucketHandle
 	ctx      context.Context
 	exchange string
 	symbol   string
 }
 
-// newStorage is the constructor for Storage
-func newStorage(ctx context.Context, exchange, symbol string) (*Storage, error) {
+// New is the constructor for Storage
+func New(ctx context.Context, exchange, symbol string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func newStorage(ctx context.Context, exchange, symbol string) (*Storage, error) 
 	}
 	bkt := *client.Bucket(bucket)
 
-	return &Storage{
+	return &Bucket{
 		bkt:      bkt,
 		ctx:      ctx,
 		exchange: exchange,
@@ -45,12 +45,12 @@ func newStorage(ctx context.Context, exchange, symbol string) (*Storage, error) 
 	}, nil
 }
 
-func (s Storage) Export(file *os.File, date string) error {
-	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
+func (b Bucket) Export(file *os.File, date string) error {
+	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
 
-	path := storagePath(s.exchange, s.symbol, date)
-	w := s.bkt.Object(path).NewWriter(ctx)
+	path := b.Path(date)
+	w := b.bkt.Object(path).NewWriter(ctx)
 	file.Seek(0, 0)
 	if _, err := io.Copy(w, file); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)
@@ -62,12 +62,12 @@ func (s Storage) Export(file *os.File, date string) error {
 }
 
 // TODO: pass fileformat?
-func (s Storage) Read(date string) ([][]string, error) {
-	ctx, cancel := context.WithTimeout(s.ctx, time.Second*timeout)
+func (b Bucket) Read(date string) ([][]string, error) {
+	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
 
-	path := storagePath(s.exchange, s.symbol, date)
-	obj := s.bkt.Object(path)
+	path := b.Path(date)
+	obj := b.bkt.Object(path)
 	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, err
@@ -83,9 +83,9 @@ func (s Storage) Read(date string) ([][]string, error) {
 }
 
 // Delete the folder/file
-func (s Storage) Delete(filepath string) error {
-	obj := s.bkt.Object(filepath)
-	err := obj.Delete(s.ctx)
+func (b Bucket) Delete(filepath string) error {
+	obj := b.bkt.Object(filepath)
+	err := obj.Delete(b.ctx)
 	if err != nil {
 		return err
 	}
@@ -93,12 +93,11 @@ func (s Storage) Delete(filepath string) error {
 }
 
 // List all files
-func (s Storage) List() []string {
-	// Optional Query filter, defaults a,b,c..
+func (b Bucket) List() []string {
 	query := &gcp.Query{Prefix: ""}
 
 	var names []string
-	it := s.bkt.Objects(s.ctx, query)
+	it := b.bkt.Objects(b.ctx, query)
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {
@@ -112,7 +111,7 @@ func (s Storage) List() []string {
 	return names
 }
 
-// storagePath generates a folder/file.csv
-func storagePath(exchange, symbol, name string) string {
-	return fmt.Sprintf("%s/%s/%s.csv", exchange, symbol, name)
+// Path generates a exchange/symbol/date.csv path for gcp buckets
+func (b Bucket) Path(date string) string {
+	return fmt.Sprintf("%s/%s/%s.csv", b.exchange, b.symbol, date)
 }
