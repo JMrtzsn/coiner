@@ -6,9 +6,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"google.golang.org/api/iterator"
 	"io"
-	"log"
 	"os"
 	"time"
 )
@@ -23,14 +21,14 @@ type Bucket struct {
 	symbol   string
 }
 
-// New is the constructor for Storage
-func New(ctx context.Context, exchange, symbol string) (*Bucket, error) {
+// NewBucket is the constructor for Storage
+func NewBucket(ctx context.Context, exchange, symbol string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO assert bucket exist if not create
+	// TODO assert bucket exist / load using viper?
 	bucket, ok := os.LookupEnv("CLOUD_BUCKET")
 	if !ok {
 		return nil, errors.New("invalid env var")
@@ -90,25 +88,6 @@ func (b Bucket) Delete(filepath string) error {
 		return err
 	}
 	return nil
-}
-
-// List all files
-func (b Bucket) List() []string {
-	query := &gcp.Query{Prefix: ""}
-
-	var names []string
-	it := b.bkt.Objects(b.ctx, query)
-	for {
-		attrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		names = append(names, attrs.Name)
-	}
-	return names
 }
 
 // Path generates a exchange/symbol/date.csv path for gcp buckets

@@ -6,6 +6,7 @@ import (
 	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 type Local struct {
@@ -13,10 +14,10 @@ type Local struct {
 	symbol   string
 }
 
-func newLocal(exchange, symbol string) *Local {
+func NewLocal(exchange, symbol string) *Local {
 	return &Local{
 		exchange: exchange,
-		symbol: symbol,
+		symbol:   symbol,
 	}
 }
 
@@ -26,7 +27,6 @@ func (l Local) Read(file string) ([][]string, error) {
 		return nil, err
 	}
 	defer csvfile.Close()
-	// TODO read safely
 	records, err := csv.NewReader(csvfile).ReadAll()
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (l Local) Read(file string) ([][]string, error) {
 
 func (l Local) Export(input *os.File, date string) error {
 	output, err := func() (*os.File, error) {
-		dir := dirPath(l.exchange, l.symbol)
+		dir := l.dirPath(date)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 				return nil, err
@@ -58,7 +58,7 @@ func (l Local) Export(input *os.File, date string) error {
 	return nil
 }
 
-func dirPath(exchange, symbol string) string {
-	// TODO filepath.Join()
-	return fmt.Sprintf("%s/data/%s/%s", projectpath.Root, exchange, symbol)
+// dirPath generates a exchange/symbol/date.csv path for local storage
+func (l Local) dirPath(date string) string {
+	return filepath.Join(projectpath.Root, l.exchange, l.symbol, date)
 }

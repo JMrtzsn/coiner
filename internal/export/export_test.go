@@ -41,6 +41,7 @@ var data = []model.OHLCV{
 		VOLUME: "56.91619600",
 	},
 }
+
 var (
 	records [][]string
 	test    = "test"
@@ -59,7 +60,7 @@ func TestMain(m *testing.M) {
 
 func TestExportLocalCSV(t *testing.T) {
 	file, err := CreateTempCSV(records)
-	l := newLocal(test, test)
+	l := NewLocal(test, test)
 	assert.Nil(t, err)
 
 	defer file.Close()
@@ -69,8 +70,8 @@ func TestExportLocalCSV(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	path := dirPath(test, test) + fmt.Sprintf("%s.csv", test)
-	got, err := l.Read(path)
+	csvPath := l.dirPath(test) + fmt.Sprintf("%s.csv", test)
+	got, err := l.Read(csvPath)
 	assert.Nil(t, err)
 
 	if len(got) > 1 {
@@ -81,9 +82,9 @@ func TestExportLocalCSV(t *testing.T) {
 	}
 
 	// Cleanup
-	err = os.Remove(path)
+	err = os.Remove(csvPath)
 	assert.Nil(t, err)
-	err = os.Remove(dirPath(test, test))
+	err = os.Remove(l.dirPath(test))
 	assert.Nil(t, err)
 }
 
@@ -94,7 +95,7 @@ func TestExportBucketCSV(t *testing.T) {
 	defer os.Remove(file.Name())
 
 	ctx := context.Background()
-	bucket, err := New(ctx, test, test)
+	bucket, err := NewBucket(ctx, test, test)
 	assert.Nil(t, err)
 
 	err = bucket.Export(file, test)
