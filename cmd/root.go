@@ -20,7 +20,7 @@ var (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "coiner",
-		Short: "A common interface for popular crypto exchanges",
+		Short: "A common interface for popular crypto exchange",
 	}
 )
 

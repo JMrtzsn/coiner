@@ -1,15 +1,13 @@
 package cmd
 
 import (
-	"github.com/jmrtzsn/coiner/internal/exchanges/binance"
-	"github.com/jmrtzsn/coiner/internal/export"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
 )
 
-var env = envConfig{
+var env = Viper{
 	Exchange: "binance",
 	Interval: "1min",
 	Symbols:  []string{"BTCUSDT", "ETHUSDT"},
@@ -29,28 +27,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestLoadEnvConfig(t *testing.T){
-	got := LoadEnvConfig("test", "env")
+	got := LoadConfig("test", "env")
 	assert.Equal(t, &env, got )
 }
 
 func TestEnvToConfig(t *testing.T){
-	got, err := ToConfig(env)
+	got, err := ToDownloader(env)
 	assert.Nil(t, err)
 
-	ex := &binance.Binance{}
-	ex.Init(env.Key, env.Secret)
-
-	exports := make(map[string][]export.Command)
-	exports["BTCUSDT"] = []export.Command{&export.Local{}}
-	exports["ETHUSDT"] = []export.Command{&export.Local{}}
-
-	want := &Config{
-		Exchange: ex,
-		Interval: "1min",
-		Symbols:  []string{"BTCUSDT", "ETHUSDT"},
-		Exports:  exports,
-		From:     "2019-01-01",
-		To:       "2019-01-02",
-	}
-	assert.Equal(t, want, got )
+	assert.Equal(t, "want", got )
 }

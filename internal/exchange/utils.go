@@ -9,8 +9,3 @@ func IsoToUnix(date string) (int64, error) {
 	}
 	return ts.UnixNano() / int64(time.Millisecond), nil
 }
-
-func UnixToISO(date int64) string {
-	dt := time.Unix(date/1000, 0)
-	return dt.UTC().Format(time.RFC3339)
-}

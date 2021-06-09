@@ -3,7 +3,6 @@ package binance
 import (
 	"context"
 	"github.com/adshao/go-binance/v2"
-	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/model"
 	"strconv"
 	"time"
@@ -47,7 +46,7 @@ func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time
 }
 
 func OHLCV(b *binance.Kline) model.OHLCV {
-	dt := exchange.UnixToISO(b.OpenTime)
+	dt := unixToISO(b.OpenTime)
 	ts := strconv.Itoa(int(b.OpenTime) / 1000)
 	o := model.OHLCV{
 		DATE:   dt,
@@ -59,4 +58,9 @@ func OHLCV(b *binance.Kline) model.OHLCV {
 		VOLUME: b.Volume,
 	}
 	return o
+}
+
+func unixToISO(date int64) string {
+	dt := time.Unix(date/1000, 0)
+	return dt.UTC().Format(time.RFC3339)
 }

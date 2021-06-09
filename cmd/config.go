@@ -3,16 +3,16 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal/exchanges"
-	"github.com/jmrtzsn/coiner/internal/exchanges/binance"
-	"github.com/jmrtzsn/coiner/internal/export"
+	"github.com/jmrtzsn/coiner/internal"
+	"github.com/jmrtzsn/coiner/internal/exchange"
+	"github.com/jmrtzsn/coiner/internal/exchange/binance"
 	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/spf13/viper"
 	"log"
 )
 
-// envConfig contain program input (loaded from env or input vars)
-type envConfig struct {
+// Viper contain program input (loaded from env or input vars)
+type Viper struct {
 	// TODO create valid types (enums?) for vars (no checking?)
 	// TODO: API_KEYS MAP? - Exchange object
 	Exchange string   `mapstructure:"EXCHANGE"`
@@ -25,17 +25,8 @@ type envConfig struct {
 	Secret   string   `mapstructure:"SECRET"`
 }
 
-type Config struct {
-	Exchange exchanges.Exchange
-	Interval string
-	Symbols  []string
-	Exports  map[string][]export.Command
-	From     string
-	To       string
-}
-
 // TODO read ENV vars and load into config
-func LoadEnvConfig(name, typ string) *envConfig {
+func LoadConfig(name, typ string) *Viper {
 	viper.AddConfigPath(projectpath.Root)
 	viper.SetConfigName(name)
 	viper.SetConfigType(typ)
@@ -47,8 +38,7 @@ func LoadEnvConfig(name, typ string) *envConfig {
 			log.Fatalf("Unknown error, %v", err)
 		}
 	}
-
-	config := &envConfig{}
+	config := &Viper{}
 	err := viper.Unmarshal(config)
 	if err != nil {
 		log.Fatalf("unable to decode config into struct, %v", err)
@@ -57,28 +47,21 @@ func LoadEnvConfig(name, typ string) *envConfig {
 	return config
 }
 
-func ToConfig(env envConfig) (*Config, error) {
-	var err error
-	config := &Config{}
+func ToDownloader(conf Viper) (*internal.Downloader, error) {
 
-	switch env.Exchange {
+	downloader := &internal.Downloader{}
+
+	var exchange exchange.Exchange
+	ctx := context.Background()
+	switch conf.Exchange {
 	case "binance":
-		exchange := &binance.Binance{}
-		exchange.Init(env.Key, env.Secret)
-		config.Exchange = exchange
+		exchange = &binance.Binance{}
+		exchange.Init(ctx, conf.Key, conf.Secret)
 	default:
-		return nil, fmt.Errorf("exchange not found %s", env.Exchange)
+		return nil, fmt.Errorf("exchange not found %s", conf.Exchange)
 	}
 
-	config.Exports, err = export.CreateCommands(context.Background(), env.Outputs, env.Symbols, env.Exchange)
-	if err != nil {
-		return nil, err
-	}
 
-	config.Interval = env.Interval
-	config.Symbols = env.Symbols
-	config.From = env.From
-	config.To = env.To
 
-	return config, nil
+	return downloader, nil
 }

@@ -1,7 +1,7 @@
 // Contains common exchange structs, interfaces used as internal API for sub-packages
 package model
 
-// OHLCV is the main communications struct for downloading historical data
+// OHLCV mirrors the model used by pythons backtrader
 // OPEN, HIGH, LOW, CLOSE and VOLUME
 type OHLCV struct {
 	DATE   string // dateTime 3933 format
