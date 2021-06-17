@@ -19,6 +19,10 @@ func (e *Binance) Init(ctx context.Context, key, secret string) {
 	e.ctx = ctx
 }
 
+func (e *Binance) String() string{
+	return "Binance"
+}
+
 // CandlesByPeriod validats and parses inputs.
 // Returns standard trade data, according to the Open, High, Low, Volume Format
 // symbol: BUYSELL = BTCUSD

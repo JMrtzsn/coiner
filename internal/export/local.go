@@ -21,6 +21,10 @@ func NewLocal(exchange, symbol string) *Local {
 	}
 }
 
+func (l Local) String() string{
+	return "Local"
+}
+
 func (l Local) Read(file string) ([][]string, error) {
 	csvfile, err := os.Open(file)
 	if err != nil {

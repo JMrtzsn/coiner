@@ -11,7 +11,7 @@ var env = Viper{
 	Exchange: "binance",
 	Interval: "1min",
 	Symbols:  []string{"BTCUSDT", "ETHUSDT"},
-	Outputs:  []string{"local", "storage"},
+	Exports:  []string{"local"},
 	From:     "2019-01-01",
 	To:       "2019-01-02",
 	Key:      "test",
@@ -32,8 +32,13 @@ func TestLoadEnvConfig(t *testing.T){
 }
 
 func TestEnvToConfig(t *testing.T){
-	got, err := ToDownloader(env)
-	assert.Nil(t, err)
+	got := ToDownloader(env)
+	want := "Exchange: Binance, Exports: [Local Local], Interval: 1min, Symbols: [BTCUSDT ETHUSDT], From: 2019-01-01 00:00:00 +0000 UTC, To: 2019-01-02 23:59:59 +0000 UTC"
+	assert.Equal(t, want, got.String() )
+}
 
-	assert.Equal(t, "want", got )
+func TestToTime(t *testing.T){
+	got := ToTime("2019-01-01")
+	want := int64(1546300800)
+	assert.Equal(t, want, got.Unix())
 }

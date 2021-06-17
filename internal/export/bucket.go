@@ -13,7 +13,6 @@ import (
 
 const timeout = 50
 
-// Storage type struct
 type Bucket struct {
 	bkt      gcp.BucketHandle
 	ctx      context.Context
@@ -21,7 +20,6 @@ type Bucket struct {
 	symbol   string
 }
 
-// NewBucket is the constructor for Storage
 func NewBucket(ctx context.Context, exchange, symbol string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
@@ -41,6 +39,10 @@ func NewBucket(ctx context.Context, exchange, symbol string) (*Bucket, error) {
 		exchange: exchange,
 		symbol:   symbol,
 	}, nil
+}
+
+func (b Bucket) String() string {
+	return "Bucket"
 }
 
 func (b Bucket) Export(file *os.File, date string) error {

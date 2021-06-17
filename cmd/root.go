@@ -10,9 +10,10 @@ var (
 	// day, hour, minute. Defaults to 1 min.
 	Interval string
 	// 2019-01-01
-	From, To string
-	Symbol   []string
-	Output   []string
+	To     string
+	From   string
+	Symbol []string
+	Output []string
 )
 
 
