@@ -19,8 +19,8 @@ type Viper struct {
 	// TODO: API_KEYS MAP? - Exchange object
 	Exchange string   `mapstructure:"EXCHANGE"` // binance .. TODO slice
 	Interval string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
-	Symbols  []string `mapstructure:"SYMBOLS"`  // BTCUSDT, etc
-	Exports  []string `mapstructure:"EXPORT"`   // local, bucket
+	Symbols  []string `mapstructure:"SYMBOLS"`  // BTCUSDT, ETHUSDT
+	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
 	From     string   `mapstructure:"FROM"`     // 2020-04-04
 	To       string   `mapstructure:"TO"`       // 2020-04-05
 	Key      string   `mapstructure:"KEY"`      // exchange key
@@ -32,6 +32,11 @@ func LoadConfig(name, typ string) *Viper {
 	viper.AddConfigPath(projectpath.Root)
 	viper.SetConfigName(name)
 	viper.SetConfigType(typ)
+
+	viper.SetDefault("Exchange", "binance")
+	viper.SetDefault("Interval", "1min")
+	viper.SetDefault("From", time.Now().Format("2006-01-02"))
+	viper.SetDefault("To", time.Now().Format("2006-01-02"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -51,8 +56,9 @@ func LoadConfig(name, typ string) *Viper {
 
 // TODO validate input params
 func ToDownloader(conf Viper) internal.Downloader {
-	var inputExchange exchange.Exchange
 	ctx := context.Background()
+
+	var inputExchange exchange.Exchange
 	switch conf.Exchange {
 	case "binance":
 		inputExchange = &binance.Binance{}
@@ -81,19 +87,22 @@ func ToDownloader(conf Viper) internal.Downloader {
 		}
 	}
 
+	From := FromTime(conf.From)
+	To := ToTime(conf.To)
+
 	downloader := internal.Downloader{
 		Exchange: inputExchange,
 		Exports:  inputExport,
 		Interval: conf.Interval,
 		Symbols:  conf.Symbols,
-		From:     ToTime(conf.From),
-		To:       ToEndTime(conf.To),
+		From:     From,
+		To:       To,
 	}
 
 	return downloader
 }
 
-func ToTime(input string) time.Time {
+func FromTime(input string) time.Time {
 	t, err := time.Parse(time.RFC3339, input+"T00:00:00.000Z")
 	if err != nil {
 		panic(fmt.Sprintf("failed to convert time %s", t))
@@ -101,7 +110,7 @@ func ToTime(input string) time.Time {
 	return t
 }
 
-func ToEndTime(input string) time.Time {
+func ToTime(input string) time.Time {
 	t, err := time.Parse(time.RFC3339, input+"T23:59:59.000Z")
 	if err != nil {
 		panic(fmt.Sprintf("failed to convert time %s", t))
