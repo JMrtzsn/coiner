@@ -58,15 +58,24 @@ func LoadConfig(name, typ string) *Viper {
 func ToDownloader(conf Viper) internal.Downloader {
 	ctx := context.Background()
 
-	var inputExchange exchange.Exchange
-	switch conf.Exchange {
-	case "binance":
-		inputExchange = &binance.Binance{}
-		inputExchange.Init(ctx, conf.Key, conf.Secret)
-	default:
-		panic(fmt.Sprintf("exchange not found %s", conf.Exchange))
+	inputExchange := setExchange(conf, ctx)
+	inputExport := setExport(conf, ctx)
+	From := FromTime(conf.From)
+	To := ToTime(conf.To)
+
+	downloader := internal.Downloader{
+		Exchange: inputExchange,
+		Exports:  inputExport,
+		Interval: conf.Interval,
+		Symbols:  conf.Symbols,
+		From:     From,
+		To:       To,
 	}
 
+	return downloader
+}
+
+func setExport(conf Viper, ctx context.Context) []export.Export {
 	var inputExport []export.Export
 	for _, e := range conf.Exports {
 		switch e {
@@ -86,20 +95,19 @@ func ToDownloader(conf Viper) internal.Downloader {
 			panic(fmt.Sprintf("export not found %s", e))
 		}
 	}
+	return inputExport
+}
 
-	From := FromTime(conf.From)
-	To := ToTime(conf.To)
-
-	downloader := internal.Downloader{
-		Exchange: inputExchange,
-		Exports:  inputExport,
-		Interval: conf.Interval,
-		Symbols:  conf.Symbols,
-		From:     From,
-		To:       To,
+func setExchange(conf Viper, ctx context.Context) exchange.Exchange {
+	var inputExchange exchange.Exchange
+	switch conf.Exchange {
+	case "binance":
+		inputExchange = &binance.Binance{}
+		inputExchange.Init(ctx, conf.Key, conf.Secret)
+	default:
+		panic(fmt.Sprintf("exchange not found %s", conf.Exchange))
 	}
-
-	return downloader
+	return inputExchange
 }
 
 func FromTime(input string) time.Time {
