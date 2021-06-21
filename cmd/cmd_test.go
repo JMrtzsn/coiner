@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestLoadEnvConfig(t *testing.T) {
-	var env = Viper{
+	var env = Config{
 		Exchange: "binance",
 		Interval: "1min",
 		Symbols:  []string{"BTCUSDT", "ETHUSDT"},
@@ -26,13 +26,14 @@ func TestLoadEnvConfig(t *testing.T) {
 		Key:      "test",
 		Secret:   "test",
 	}
-	got := LoadConfig("viper", "env")
+	LoadConfig("viper", "env")
+	got := unMarshalViper()
 	assert.Equal(t, &env, got)
 }
 
 func TestEnvToConfig(t *testing.T) {
-	env := *LoadConfig("viper", "env")
-	got := ToDownloader(env)
+	LoadConfig("viper", "env")
+	got := ToDownloader()
 	want := "Exchange: Binance, Exports: [Local Local], Interval: 1min, Symbols: [BTCUSDT ETHUSDT]," +
 		" From: 2019-01-01 00:00:00 +0000 UTC, To: 2019-01-02 23:59:59 +0000 UTC"
 	assert.Equal(t, want, got.String())

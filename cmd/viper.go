@@ -7,14 +7,13 @@ import (
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/exchange/binance"
 	"github.com/jmrtzsn/coiner/internal/export"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/spf13/viper"
 	"log"
 	"time"
 )
 
-// Viper contain program input (loaded from env or input vars)
-type Viper struct {
+// Config contain program input (loaded from env or input vars)
+type Config struct {
 	// TODO create valid types (enums?) for vars (no checking?)
 	// TODO: API_KEYS MAP? - Exchange object
 	Exchange string   `mapstructure:"EXCHANGE"` // binance .. TODO slice
@@ -27,35 +26,20 @@ type Viper struct {
 	Secret   string   `mapstructure:"SECRET"`   // exchange secret
 }
 
-// TODO read ENV vars and load into config
-func LoadConfig(name, typ string) *Viper {
-	viper.AddConfigPath(projectpath.Root)
-	viper.SetConfigName(name)
-	viper.SetConfigType(typ)
 
-	viper.SetDefault("Exchange", "binance")
-	viper.SetDefault("Interval", "1min")
-	viper.SetDefault("From", time.Now().Format("2006-01-02"))
-	viper.SetDefault("To", time.Now().Format("2006-01-02"))
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatalf("unable to open config file, %v", err)
-		} else {
-			log.Fatalf("Unknown error, %v", err)
-		}
-	}
-	config := &Viper{}
+func unMarshalViper() *Config {
+	config := &Config{}
 	err := viper.Unmarshal(config)
 	if err != nil {
 		log.Fatalf("unable to decode config into struct, %v", err)
 	}
-
 	return config
 }
 
 // TODO validate input params
-func ToDownloader(conf Viper) internal.Downloader {
+func ToDownloader() internal.Downloader {
+	conf := *unMarshalViper()
+
 	ctx := context.Background()
 
 	inputExchange := setExchange(conf, ctx)
@@ -75,7 +59,7 @@ func ToDownloader(conf Viper) internal.Downloader {
 	return downloader
 }
 
-func setExport(conf Viper, ctx context.Context) []export.Export {
+func setExport(conf Config, ctx context.Context) []export.Export {
 	var inputExport []export.Export
 	for _, e := range conf.Exports {
 		switch e {
@@ -98,7 +82,7 @@ func setExport(conf Viper, ctx context.Context) []export.Export {
 	return inputExport
 }
 
-func setExchange(conf Viper, ctx context.Context) exchange.Exchange {
+func setExchange(conf Config, ctx context.Context) exchange.Exchange {
 	var inputExchange exchange.Exchange
 	switch conf.Exchange {
 	case "binance":

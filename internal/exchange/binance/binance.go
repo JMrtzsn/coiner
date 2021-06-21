@@ -35,8 +35,8 @@ func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time
 		NewKlinesService().
 		Symbol(symbol).
 		Interval(interval).
-		StartTime(start.Unix()).
-		EndTime(end.Unix()).
+		StartTime(toBinanceTime(start)).
+		EndTime(toBinanceTime(end)).
 		Do(e.ctx)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time
 }
 
 func OHLCV(b *binance.Kline) model.OHLCV {
-	dt := unixToISO(b.OpenTime)
+	dt := fromBinanceTime(b.OpenTime)
 	ts := strconv.Itoa(int(b.OpenTime) / 1000)
 	o := model.OHLCV{
 		DATE:   dt,
@@ -64,7 +64,11 @@ func OHLCV(b *binance.Kline) model.OHLCV {
 	return o
 }
 
-func unixToISO(date int64) string {
+func toBinanceTime(ts time.Time) int64 {
+	return ts.UnixNano() / int64(time.Millisecond)
+}
+
+func fromBinanceTime(date int64) string {
 	dt := time.Unix(date/1000, 0)
 	return dt.UTC().Format(time.RFC3339)
 }
