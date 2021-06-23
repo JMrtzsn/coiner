@@ -11,13 +11,11 @@ import (
 
 type Local struct {
 	exchange string
-	symbol   string
 }
 
-func NewLocal(exchange, symbol string) *Local {
+func NewLocal(exchange string) *Local {
 	return &Local{
 		exchange: exchange,
-		symbol:   symbol,
 	}
 }
 
@@ -25,8 +23,8 @@ func (l Local) String() string{
 	return "Local"
 }
 
-func (l Local) Read(file string) ([][]string, error) {
-	csvfile, err := os.Open(file)
+func (l Local) Read(path string) ([][]string, error) {
+	csvfile, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +36,9 @@ func (l Local) Read(file string) ([][]string, error) {
 	return records, nil
 }
 
-func (l Local) Export(input *os.File, date string) error {
+func (l Local) Export(input *os.File, date, symbol string) error {
 	output, err := func() (*os.File, error) {
-		dir := l.dirPath(date)
+		dir := l.dirPath(date, symbol)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 				return nil, err
@@ -63,6 +61,6 @@ func (l Local) Export(input *os.File, date string) error {
 }
 
 // dirPath generates a exchange/symbol/date.csv path for local storage
-func (l Local) dirPath(date string) string {
-	return filepath.Join(projectpath.Root, l.exchange, l.symbol, date)
+func (l Local) dirPath(date, symbol string) string {
+	return filepath.Join(projectpath.Root, l.exchange, symbol, date)
 }

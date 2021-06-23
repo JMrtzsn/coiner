@@ -50,7 +50,7 @@ var (
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
 	records = model.ToCSV(data)
-	if err := godotenv.Load(fmt.Sprintf("%s/.env", projectpath.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()
@@ -60,17 +60,17 @@ func TestMain(m *testing.M) {
 
 func TestExportLocalCSV(t *testing.T) {
 	file, err := CreateTempCSV(records)
-	l := NewLocal(test, test)
+	l := NewLocal(test)
 	assert.Nil(t, err)
 
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	err = l.Export(file, test)
+	err = l.Export(file, test, test)
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	csvPath := l.dirPath(test) + fmt.Sprintf("%s.csv", test)
+	csvPath := l.dirPath(test, test) + fmt.Sprintf("%s.csv", test)
 	got, err := l.Read(csvPath)
 	assert.Nil(t, err)
 
@@ -84,7 +84,7 @@ func TestExportLocalCSV(t *testing.T) {
 	// Cleanup
 	err = os.Remove(csvPath)
 	assert.Nil(t, err)
-	err = os.Remove(l.dirPath(test))
+	err = os.Remove(l.dirPath(test, test))
 	assert.Nil(t, err)
 }
 
@@ -95,14 +95,14 @@ func TestExportBucketCSV(t *testing.T) {
 	defer os.Remove(file.Name())
 
 	ctx := context.Background()
-	bucket, err := NewBucket(ctx, test, test)
+	bucket, err := NewBucket(ctx, test)
 	assert.Nil(t, err)
 
-	err = bucket.Export(file, test)
+	err = bucket.Export(file, test, test)
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	got, err := bucket.Read(test)
+	got, err := bucket.Read(test, test)
 	assert.Nil(t, err)
 	if len(got) > 1 {
 		assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
@@ -113,6 +113,6 @@ func TestExportBucketCSV(t *testing.T) {
 
 	// Cleanup
 	// TODO remove test file from GCP
-	err = bucket.Delete(bucket.Path(test))
+	err = bucket.Delete(bucket.Path(test,test))
 	assert.Nil(t, err)
 }

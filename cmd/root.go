@@ -11,12 +11,6 @@ import (
 
 var (
 	CfgFile  string
-	Exchange string
-	Interval string
-	To       string
-	From     string
-	Symbols  []string
-	Exports  []string
 )
 
 var (
@@ -44,12 +38,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.Flags().StringVarP(&CfgFile, "config", "c", "", "Name of the config file")
-	rootCmd.Flags().StringVarP(&Exchange, "exchange", "e", "", "Exchange")
-	rootCmd.Flags().StringVarP(&Interval, "interval", "i", "", "Interval (optional) defaults to 1min")
-	rootCmd.Flags().StringArrayP("symbols", "y", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
-	rootCmd.Flags().StringArrayP("exports", "x", []string{}, "comma separated output list: --symbols=\"local,bucket\"")
-	rootCmd.Flags().StringVarP(&From, "from", "f", "", "From: 2019-01-01 (defaults to today)")
-	rootCmd.Flags().StringVarP(&To, "to", "t", "", "To: 2019-01-02 (defaults to today)")
+	rootCmd.Flags().StringP( "exchange", "e", "", "Exchange")
+	rootCmd.Flags().StringP( "interval", "i", "", "Interval (optional) defaults to 1min")
+	rootCmd.Flags().StringSlice("symbols", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
+	rootCmd.Flags().StringSlice("exports", []string{}, "comma separated output list: --exports=\"local,bucket\"")
+	rootCmd.Flags().StringP( "from", "f", "", "From: 2019-01-01 (defaults to today)")
+	rootCmd.Flags().StringP( "to", "t", "", "To: 2019-01-02 (defaults to today)")
 
 }
 

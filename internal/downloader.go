@@ -22,3 +22,8 @@ func (d Downloader) String() string{
 	return fmt.Sprintf("Exchange: %s, Exports: %s, Interval: %v, Symbols: %v, From: %s, To: %s",
 		d.Exchange, d.Exports, d.Interval, d.Symbols, d.From, d.To)
 }
+
+// TODO: Actual downloading batching function
+func (d Downloader) Download() {
+
+}

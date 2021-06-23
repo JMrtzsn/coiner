@@ -5,7 +5,8 @@ import (
 )
 
 type Export interface {
-	Export(*os.File, string) error
+	// USAGE EXPORT(file, symbol, date)
+	Export(*os.File, string, string) error
 	String() string
 }
 

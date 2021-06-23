@@ -17,10 +17,11 @@ type Bucket struct {
 	bkt      gcp.BucketHandle
 	ctx      context.Context
 	exchange string
-	symbol   string
 }
 
-func NewBucket(ctx context.Context, exchange, symbol string) (*Bucket, error) {
+//
+
+func NewBucket(ctx context.Context, exchange string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
@@ -37,7 +38,6 @@ func NewBucket(ctx context.Context, exchange, symbol string) (*Bucket, error) {
 		bkt:      bkt,
 		ctx:      ctx,
 		exchange: exchange,
-		symbol:   symbol,
 	}, nil
 }
 
@@ -45,11 +45,11 @@ func (b Bucket) String() string {
 	return "Bucket"
 }
 
-func (b Bucket) Export(file *os.File, date string) error {
+func (b Bucket) Export(file *os.File, date, symbol string) error {
 	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
 
-	path := b.Path(date)
+	path := b.Path(date, symbol)
 	w := b.bkt.Object(path).NewWriter(ctx)
 	file.Seek(0, 0)
 	if _, err := io.Copy(w, file); err != nil {
@@ -62,11 +62,11 @@ func (b Bucket) Export(file *os.File, date string) error {
 }
 
 // TODO: pass fileformat?
-func (b Bucket) Read(date string) ([][]string, error) {
+func (b Bucket) Read(date, symbol string) ([][]string, error) {
 	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
 
-	path := b.Path(date)
+	path := b.Path(date, symbol)
 	obj := b.bkt.Object(path)
 	r, err := obj.NewReader(ctx)
 	if err != nil {
@@ -93,6 +93,6 @@ func (b Bucket) Delete(filepath string) error {
 }
 
 // Path generates a exchange/symbol/date.csv path for gcp buckets
-func (b Bucket) Path(date string) string {
-	return fmt.Sprintf("%s/%s/%s.csv", b.exchange, b.symbol, date)
+func (b Bucket) Path(date, symbol string) string {
+	return fmt.Sprintf("%s/%s/%s.csv", b.exchange, symbol, date)
 }

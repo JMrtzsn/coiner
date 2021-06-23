@@ -12,11 +12,9 @@ import (
 	"time"
 )
 
-// Config contain program input (loaded from env or input vars)
+// Config contain program input (loaded from env hence the mapstructure all caps)
 type Config struct {
-	// TODO create valid types (enums?) for vars (no checking?)
-	// TODO: API_KEYS MAP? - Exchange object
-	Exchange string   `mapstructure:"EXCHANGE"` // binance .. TODO slice
+	Exchange string   `mapstructure:"EXCHANGE"` // binance
 	Interval string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
 	Symbols  []string `mapstructure:"SYMBOLS"`  // BTCUSDT, ETHUSDT
 	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
@@ -25,7 +23,6 @@ type Config struct {
 	Key      string   `mapstructure:"KEY"`      // exchange key
 	Secret   string   `mapstructure:"SECRET"`   // exchange secret
 }
-
 
 func unMarshalViper() *Config {
 	config := &Config{}
@@ -64,17 +61,13 @@ func setExport(conf Config, ctx context.Context) []export.Export {
 	for _, e := range conf.Exports {
 		switch e {
 		case "local":
-			for _, symbol := range conf.Symbols {
-				inputExport = append(inputExport, export.NewLocal(conf.Exchange, symbol))
-			}
+			inputExport = append(inputExport, export.NewLocal(conf.Exchange))
 		case "storage":
-			for _, symbol := range conf.Symbols {
-				bucket, err := export.NewBucket(ctx, conf.Exchange, symbol)
-				if err != nil {
-					panic(fmt.Sprintf("bucket export creation error: %s", e))
-				}
-				inputExport = append(inputExport, bucket)
+			bucket, err := export.NewBucket(ctx, conf.Exchange)
+			if err != nil {
+				panic(fmt.Sprintf("bucket export creation error: %s", e))
 			}
+			inputExport = append(inputExport, bucket)
 		default:
 			panic(fmt.Sprintf("export not found %s", e))
 		}
