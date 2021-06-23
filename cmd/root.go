@@ -42,22 +42,36 @@ func initConfig() {
 }
 
 func Run(cmd *cobra.Command, args []string) {
-	fmt.Println(Exchange)
-	fmt.Println(Interval)
-	fmt.Printf("%v \n", len(Symbols))
-	fmt.Printf("%v \n", Exports)
-	fmt.Println(From)
-	fmt.Println(To)
+	env := viper.GetString("env")
+	if env != "" {
+		downloader := ToDownloader()
+		fmt.Printf("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nFrom: %s - To %s",
+			downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.From, downloader.To)
+
+	}
+
+	err := viper.UnmarshalKey("symbols", &Symbols)
+	if err != nil {
+		return
+	}
+
+	err := viper.UnmarshalKey("exports", &Symbols)
+	if err != nil {
+		return
+	}
+
+}
+
+func loadCommandLine(){
+
 }
 
 // TODO run with args -> run with env
 func setupFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().StringVarP(&Exchange, "exchange", "e", "", "Exchange")
 	rootCmd.Flags().StringVarP(&Interval, "interval", "i", "", "Interval (optional) defaults to 1min")
-	rootCmd.Flags().StringArrayP("symbols", "y", Symbols, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
-	rootCmd.Flags().StringArrayP("exports", "x", Exports, "comma separated output list: --symbols=\"local,bucket\"")
-
-	// Defaults to today
+	rootCmd.Flags().StringArrayP("symbols", "y", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
+	rootCmd.Flags().StringArrayP("exports", "x", []string{}, "comma separated output list: --symbols=\"local,bucket\"")
 	rootCmd.Flags().StringVarP(&From, "from", "f", "", "From: 2019-01-01 (defaults to today)")
 	rootCmd.Flags().StringVarP(&To, "to", "t", "", "To: 2019-01-02 (defaults to today)")
 }
