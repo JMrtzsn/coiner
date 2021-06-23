@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	CfgFile  string
 	Exchange string
 	Interval string
 	To       string
@@ -31,60 +32,54 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+// Run function is run when root is executed.
+func Run(cmd *cobra.Command, args []string) {
+	downloader := ToDownloader()
+	fmt.Printf("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nFrom: %s - To %s",
+		downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.From, downloader.To)
+
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
-	setupFlags(rootCmd)
-}
 
-func initConfig() {
-	LoadConfig("viper", "env")
-	viper.AutomaticEnv()
-}
-
-func Run(cmd *cobra.Command, args []string) {
-	env := viper.GetString("env")
-	if env != "" {
-		downloader := ToDownloader()
-		fmt.Printf("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nFrom: %s - To %s",
-			downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.From, downloader.To)
-
-	}
-
-	err := viper.UnmarshalKey("symbols", &Symbols)
-	if err != nil {
-		return
-	}
-
-	err := viper.UnmarshalKey("exports", &Symbols)
-	if err != nil {
-		return
-	}
-
-}
-
-func loadCommandLine(){
-
-}
-
-// TODO run with args -> run with env
-func setupFlags(rootCmd *cobra.Command) {
+	rootCmd.Flags().StringVarP(&CfgFile, "config", "c", "", "Name of the config file")
 	rootCmd.Flags().StringVarP(&Exchange, "exchange", "e", "", "Exchange")
 	rootCmd.Flags().StringVarP(&Interval, "interval", "i", "", "Interval (optional) defaults to 1min")
 	rootCmd.Flags().StringArrayP("symbols", "y", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
 	rootCmd.Flags().StringArrayP("exports", "x", []string{}, "comma separated output list: --symbols=\"local,bucket\"")
 	rootCmd.Flags().StringVarP(&From, "from", "f", "", "From: 2019-01-01 (defaults to today)")
 	rootCmd.Flags().StringVarP(&To, "to", "t", "", "To: 2019-01-02 (defaults to today)")
+
 }
 
-func LoadConfig(name, typ string) {
+func initConfig() {
+	if CfgFile != "" {
+		LoadConfig(CfgFile)
+	} else {
+		LoadConfig("viper")
+	}
+}
+
+func LoadConfig(name string) {
 	viper.AddConfigPath(projectpath.Root)
 	viper.SetConfigName(name)
-	viper.SetConfigType(typ)
+	viper.SetConfigType("env")
+
+	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+	viper.BindPFlag("exchange", rootCmd.Flags().Lookup("exchange"))
+	viper.BindPFlag("interval", rootCmd.Flags().Lookup("interval"))
+	viper.BindPFlag("symbols", rootCmd.Flags().Lookup("symbols"))
+	viper.BindPFlag("exports", rootCmd.Flags().Lookup("exports"))
+	viper.BindPFlag("from", rootCmd.Flags().Lookup("from"))
+	viper.BindPFlag("to", rootCmd.Flags().Lookup("to"))
 
 	viper.SetDefault("Exchange", "binance")
 	viper.SetDefault("Interval", "1min")
 	viper.SetDefault("From", time.Now().Format("2006-01-02"))
 	viper.SetDefault("To", time.Now().Format("2006-01-02"))
+
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
