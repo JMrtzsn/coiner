@@ -30,7 +30,7 @@ func (e *Binance) String() string{
 // start: datetime ISO RFC3339 - "2020-04-04 T12:07:00"
 // end: UNIX datetime - 1499040000000
 // limit: rows returned - 10
-func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time) ([]model.OHLCV, error) {
+func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time) ([]model.Candle, error) {
 	candles, err := e.client.
 		NewKlinesService().
 		Symbol(symbol).
@@ -42,17 +42,17 @@ func (e *Binance) 	CandlesByPeriod(symbol, interval string, start, end time.Time
 		return nil, err
 	}
 
-	var ohlcvs []model.OHLCV
+	var ohlcvs []model.Candle
 	for _, c := range candles {
 		ohlcvs = append(ohlcvs, OHLCV(c))
 	}
 	return ohlcvs, nil
 }
 
-func OHLCV(b *binance.Kline) model.OHLCV {
+func OHLCV(b *binance.Kline) model.Candle {
 	dt := fromBinanceTime(b.OpenTime)
 	ts := strconv.Itoa(int(b.OpenTime) / 1000)
-	o := model.OHLCV{
+	o := model.Candle{
 		DATE:   dt,
 		TS:     ts,
 		OPEN:   b.Open,

@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-var data = []model.OHLCV{
+var data = []model.Candle{
 	{
 		DATE:   "2020-04-04T12:00:00Z",
 		TS:     "1586001600",
@@ -49,7 +49,7 @@ var (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
-	records = model.ToCSV(data)
+	records = model.ToRecords(data)
 	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
@@ -59,18 +59,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestExportLocalCSV(t *testing.T) {
-	file, err := CreateTempCSV(records)
+	file, err := WriteToTempFile(records)
 	l := NewLocal(test)
 	assert.Nil(t, err)
 
-	defer file.Close()
-	defer os.Remove(file.Name())
+
 
 	err = l.Export(file, test, test)
 	assert.Nil(t, err)
 
 	// Read and assert everything is correct
-	csvPath := l.dirPath(test, test) + fmt.Sprintf("%s.csv", test)
+	csvPath := l.DirPath(test) + fmt.Sprintf("/%s.csv", test)
 	got, err := l.Read(csvPath)
 	assert.Nil(t, err)
 
@@ -84,12 +83,12 @@ func TestExportLocalCSV(t *testing.T) {
 	// Cleanup
 	err = os.Remove(csvPath)
 	assert.Nil(t, err)
-	err = os.Remove(l.dirPath(test, test))
+	err = os.Remove(l.DirPath(test))
 	assert.Nil(t, err)
 }
 
 func TestExportBucketCSV(t *testing.T) {
-	file, err := CreateTempCSV(records)
+	file, err := WriteToTempFile(records)
 	assert.Nil(t, err)
 	defer file.Close()
 	defer os.Remove(file.Name())

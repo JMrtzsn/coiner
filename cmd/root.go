@@ -29,9 +29,9 @@ func Execute() error {
 // Run function is run when root is executed.
 func Run(cmd *cobra.Command, args []string) {
 	downloader := ToDownloader()
-	fmt.Printf("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nFrom: %s - To %s",
-		downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.From, downloader.To)
-
+	downloader.Logger.Infof("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nStart: %s - End %s",
+		downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.Start, downloader.End)
+	downloader.Download()
 }
 
 func init() {
@@ -42,8 +42,8 @@ func init() {
 	rootCmd.Flags().StringP( "interval", "i", "", "Interval (optional) defaults to 1min")
 	rootCmd.Flags().StringSlice("symbols", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
 	rootCmd.Flags().StringSlice("exports", []string{}, "comma separated output list: --exports=\"local,bucket\"")
-	rootCmd.Flags().StringP( "from", "f", "", "From: 2019-01-01 (defaults to today)")
-	rootCmd.Flags().StringP( "to", "t", "", "To: 2019-01-02 (defaults to today)")
+	rootCmd.Flags().StringP( "start", "s", "", "Start: 2019-01-01 (defaults to today)")
+	rootCmd.Flags().StringP( "end", "d", "", "End: 2019-01-02 (defaults to today)")
 
 }
 
@@ -65,13 +65,13 @@ func LoadConfig(name string) {
 	viper.BindPFlag("interval", rootCmd.Flags().Lookup("interval"))
 	viper.BindPFlag("symbols", rootCmd.Flags().Lookup("symbols"))
 	viper.BindPFlag("exports", rootCmd.Flags().Lookup("exports"))
-	viper.BindPFlag("from", rootCmd.Flags().Lookup("from"))
-	viper.BindPFlag("to", rootCmd.Flags().Lookup("to"))
+	viper.BindPFlag("start", rootCmd.Flags().Lookup("start"))
+	viper.BindPFlag("end", rootCmd.Flags().Lookup("end"))
 
 	viper.SetDefault("Exchange", "binance")
 	viper.SetDefault("Interval", "1min")
-	viper.SetDefault("From", time.Now().Format("2006-01-02"))
-	viper.SetDefault("To", time.Now().Format("2006-01-02"))
+	viper.SetDefault("Start", time.Now().Format("2006-01-02"))
+	viper.SetDefault("End", time.Now().Format("2006-01-02"))
 
 	viper.AutomaticEnv()
 

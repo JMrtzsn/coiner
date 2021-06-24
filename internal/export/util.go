@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// CreateTempCSV create a temp CSV file from records
-func CreateTempCSV(records [][]string) (*os.File, error) {
+// WriteToTempFile create a temp CSV file from records
+func WriteToTempFile(records [][]string) (*os.File, error) {
 	file, err := ioutil.TempFile("", "file")
 	if err != nil {
 		return nil, err

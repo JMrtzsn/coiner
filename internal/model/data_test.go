@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-var data = []OHLCV{
+var data = []Candle{
 	{
 		DATE:   "2020-04-04T12:00:00Z",
 		TS:     "1586001600",
@@ -46,12 +46,12 @@ func TestMain(m *testing.M) {
 
 func TestCSV(t *testing.T) {
 	want := []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"}
-	got := data[0].csv()
+	got := data[0].Csv()
 	assert.Equal(t, got, want)
 }
 
 func TestToCSV(t *testing.T) {
-	got := ToCSV(data)
+	got := ToRecords(data)
 	assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
 	assert.Equal(t, got[1], []string{"2020-04-04T12:00:00Z", "1586001600", "6696.68000000", "6717.68000000", "6717.68000000", "6686.43000000", "155.99070000"})
 }

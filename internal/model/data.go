@@ -1,9 +1,9 @@
 // Contains common exchange structs, interfaces used as internal API for sub-packages
 package model
 
-// OHLCV mirrors the model used by pythons backtrader
+// Candle mirrors the model used by pythons backtrader
 // OPEN, HIGH, LOW, CLOSE and VOLUME
-type OHLCV struct {
+type Candle struct {
 	DATE   string // dateTime 3933 format
 	TS     string // unix timestamp milliseconds
 	OPEN   string // float
@@ -13,17 +13,17 @@ type OHLCV struct {
 	VOLUME string // float
 }
 
-// ToCSV converts an OHLCV slice to CSV records
-func ToCSV(data []OHLCV) [][]string {
+// ToRecords converts an Candle slice to CSV records
+func ToRecords(data []Candle) [][]string {
 	var csvs [][]string
 	csvs = append(csvs, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
 	for _, row := range data {
-		csvs = append(csvs, row.csv())
+		csvs = append(csvs, row.Csv())
 	}
 	return csvs
 }
 
-func (d *OHLCV) csv() []string {
+func (d *Candle) Csv() []string {
 	return []string{d.DATE, d.TS, d.OPEN, d.CLOSE, d.HIGH, d.LOW, d.VOLUME}
 }
 

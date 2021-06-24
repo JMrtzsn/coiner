@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal"
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/exchange/binance"
 	"github.com/jmrtzsn/coiner/internal/export"
+	"github.com/jmrtzsn/coiner/pkg"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"log"
 	"time"
 )
@@ -18,8 +19,8 @@ type Config struct {
 	Interval string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
 	Symbols  []string `mapstructure:"SYMBOLS"`  // BTCUSDT, ETHUSDT
 	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
-	From     string   `mapstructure:"FROM"`     // 2020-04-04
-	To       string   `mapstructure:"TO"`       // 2020-04-05
+	Start    string   `mapstructure:"START"`    // 2020-04-04
+	End      string   `mapstructure:"END"`      // 2020-04-05
 	Key      string   `mapstructure:"KEY"`      // exchange key
 	Secret   string   `mapstructure:"SECRET"`   // exchange secret
 }
@@ -34,26 +35,36 @@ func unMarshalViper() *Config {
 }
 
 // TODO validate input params
-func ToDownloader() internal.Downloader {
+func ToDownloader() pkg.Downloader {
 	conf := *unMarshalViper()
-
 	ctx := context.Background()
-
 	inputExchange := setExchange(conf, ctx)
 	inputExport := setExport(conf, ctx)
-	From := FromTime(conf.From)
-	To := ToTime(conf.To)
+	Start := StartTime(conf.Start)
+	End := EndTime(conf.End)
+	sugar := newLogger()
 
-	downloader := internal.Downloader{
+	downloader := pkg.Downloader{
 		Exchange: inputExchange,
 		Exports:  inputExport,
 		Interval: conf.Interval,
 		Symbols:  conf.Symbols,
-		From:     From,
-		To:       To,
+		Start:    Start,
+		End:      End,
+		Logger:   sugar,
 	}
 
 	return downloader
+}
+
+func newLogger() *zap.SugaredLogger {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("can't initialize zap logger: %v", err)
+	}
+	defer logger.Sync()
+	sugar := logger.Sugar()
+	return sugar
 }
 
 func setExport(conf Config, ctx context.Context) []export.Export {
@@ -87,7 +98,7 @@ func setExchange(conf Config, ctx context.Context) exchange.Exchange {
 	return inputExchange
 }
 
-func FromTime(input string) time.Time {
+func StartTime(input string) time.Time {
 	t, err := time.Parse(time.RFC3339, input+"T00:00:00.000Z")
 	if err != nil {
 		panic(fmt.Sprintf("failed to convert time %s", t))
@@ -95,7 +106,7 @@ func FromTime(input string) time.Time {
 	return t
 }
 
-func ToTime(input string) time.Time {
+func EndTime(input string) time.Time {
 	t, err := time.Parse(time.RFC3339, input+"T23:59:59.000Z")
 	if err != nil {
 		panic(fmt.Sprintf("failed to convert time %s", t))

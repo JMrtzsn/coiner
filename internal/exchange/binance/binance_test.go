@@ -12,7 +12,7 @@ import (
 
 var b = Binance{}
 
-var res = model.OHLCV{
+var res = model.Candle{
 	DATE:   "2020-04-04T12:00:00Z",
 	TS:     "1586001600",
 	OPEN:   "6696.68000000",

@@ -38,13 +38,13 @@ func (l Local) Read(path string) ([][]string, error) {
 
 func (l Local) Export(input *os.File, date, symbol string) error {
 	output, err := func() (*os.File, error) {
-		dir := l.dirPath(date, symbol)
+		dir := l.DirPath(symbol)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 				return nil, err
 			}
 		}
-		output, err := os.Create(dir + fmt.Sprintf("%s.csv", date))
+		output, err := os.Create(dir + fmt.Sprintf("/%s.csv", date))
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (l Local) Export(input *os.File, date, symbol string) error {
 	return nil
 }
 
-// dirPath generates a exchange/symbol/date.csv path for local storage
-func (l Local) dirPath(date, symbol string) string {
-	return filepath.Join(projectpath.Root, l.exchange, symbol, date)
+// DirPath generates a exchange/symbol/date.csv path for local storage
+func (l Local) DirPath(symbol string) string {
+	return filepath.Join(projectpath.Root, l.exchange, symbol)
 }
