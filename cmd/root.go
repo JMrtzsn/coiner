@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	CfgFile  string
+	CfgFile string
 )
 
 var (
@@ -29,8 +29,7 @@ func Execute() error {
 // Run function is run when root is executed.
 func Run(cmd *cobra.Command, args []string) {
 	downloader := ToDownloader()
-	downloader.Logger.Infof("Running on: \nExchange: %s \nInterval: %s \nSymbols: %s \nExports: %s \nStart: %s - End %s",
-		downloader.Exchange, downloader.Interval, downloader.Symbols, downloader.Exports, downloader.Start, downloader.End)
+	downloader.Logger.Infof("Running on: %s ", downloader.String())
 	downloader.Download()
 }
 
@@ -38,12 +37,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.Flags().StringVarP(&CfgFile, "config", "c", "", "Name of the config file")
-	rootCmd.Flags().StringP( "exchange", "e", "", "Exchange")
-	rootCmd.Flags().StringP( "interval", "i", "", "Interval (optional) defaults to 1min")
+	rootCmd.Flags().StringP("exchange", "e", "", "Exchange")
+	rootCmd.Flags().StringP("interval", "i", "", "Interval (optional) defaults to 1min")
 	rootCmd.Flags().StringSlice("symbols", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
 	rootCmd.Flags().StringSlice("exports", []string{}, "comma separated output list: --exports=\"local,bucket\"")
-	rootCmd.Flags().StringP( "start", "s", "", "Start: 2019-01-01 (defaults to today)")
-	rootCmd.Flags().StringP( "end", "d", "", "End: 2019-01-02 (defaults to today)")
+	rootCmd.Flags().StringP("start", "s", "", "Start: 2019-01-01 (defaults to today)")
+	rootCmd.Flags().StringP("end", "d", "", "End: 2019-01-02 (defaults to today)")
 
 }
 

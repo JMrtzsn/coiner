@@ -22,28 +22,74 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func TestDownloader_Download(t *testing.T) {
+func TestDownloadLocal(t *testing.T) {
 	// Will download 2 days
 	downloader.Download()
 
 	// Read and assert everything is correct
 	local, _ := downloader.Exports[0].(*export.Local)
 
-	csvPath := local.DirPath("BTCUSDT") + fmt.Sprintf("/%s.csv", "2019-01-01")
-	got, err := local.Read(csvPath)
+	btcusd := local.DirPath("BTCUSDT") + fmt.Sprintf("/%s.csv", "2019-01-01")
+	got, err := local.Read(btcusd)
 	assert.Nil(t, err)
 
 	if len(got) > 1 {
-		assert.Equal(t, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"}, got[0])
 		assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "3701.23000000", "3702.46000000", "3703.72000000", "3701.09000000", "17.10011000"}, got[1])
 	} else {
 		t.Errorf("Read 0 records from file")
 	}
 
-	// Cleanup
+	ethusd := local.DirPath("ETHUSDT") + fmt.Sprintf("/%s.csv", "2019-01-02")
+	got, err = local.Read(ethusd)
+	assert.Nil(t, err)
 
+	if len(got) > 1 {
+		assert.Equal(t, []string{"2019-01-02T00:00:00Z", "1546387200", "139.10000000", "139.43000000", "140.00000000", "139.06000000", "3180.53061000"}, got[1])
+	} else {
+		t.Errorf("Read 0 records from file")
+	}
+
+	// Cleanup
 	err = os.RemoveAll(local.DirPath("BTCUSDT"))
 	assert.Nil(t, err)
 	err = os.RemoveAll(local.DirPath("ETHUSDT"))
 	assert.Nil(t, err)
 }
+
+
+// TODO
+func TestDownloadBucket(t *testing.T) {
+	// Will download 2 days
+	downloader.Download()
+
+	// Read and assert everything is correct
+	local, _ := downloader.Exports[0].(*export.Local)
+
+	btcusd := local.DirPath("BTCUSDT") + fmt.Sprintf("/%s.csv", "2019-01-01")
+	got, err := local.Read(btcusd)
+	assert.Nil(t, err)
+
+	if len(got) > 1 {
+		assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "3701.23000000", "3702.46000000", "3703.72000000", "3701.09000000", "17.10011000"}, got[1])
+	} else {
+		t.Errorf("Read 0 records from file")
+	}
+
+	ethusd := local.DirPath("ETHUSDT") + fmt.Sprintf("/%s.csv", "2019-01-02")
+	got, err = local.Read(ethusd)
+	assert.Nil(t, err)
+
+	if len(got) > 1 {
+		assert.Equal(t, []string{"2019-01-02T00:00:00Z", "1546387200", "139.10000000", "139.43000000", "140.00000000", "139.06000000", "3180.53061000"}, got[1])
+	} else {
+		t.Errorf("Read 0 records from file")
+	}
+
+	// Cleanup
+	err = os.RemoveAll(local.DirPath("BTCUSDT"))
+	assert.Nil(t, err)
+	err = os.RemoveAll(local.DirPath("ETHUSDT"))
+	assert.Nil(t, err)
+}
+
+

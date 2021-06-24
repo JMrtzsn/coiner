@@ -56,58 +56,65 @@ func (d Downloader) Download() {
 				dayEnd = d.End
 			}
 
-			var records [][]string
-			records = append(records, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-
+			// TODO: move to object
 			duration, err := str2duration.ParseDuration(d.Interval)
 			if err != nil {
 				d.Logger.Panic("Failed to parse duration %s ", err.Error())
 			}
 
-			// Minute by Minute TODO: Other
-			for begin := dayBegin; begin.Before(dayEnd); begin = begin.Add(duration * batchsize) {
-				end := begin.Add(duration * batchsize)
-				if end.After(dayEnd) {
-					end = dayEnd
-				}
-
-				d.Logger.Infof("Candles for begin %s - end %s", begin, end)
-				candles, err := d.Exchange.CandlesByPeriod(symbol, d.Interval, begin, end)
-				if err != nil {
-					// TODO: implement fallback
-					d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
-				}
-
-				for _, candle := range candles {
-					records = append(records, candle.Csv())
-				}
-			}
-
-			d.Logger.Infof("Writing %s to temp file", symbol)
-			temp, err := export.WriteToTempFile(records)
-			if err != nil {
-				// TODO: implement fallback
-				d.Logger.Panicf("failed to create tempfile err: %s", err.Error())
-			}
+			records := d.Batch(symbol, dayBegin, dayEnd, duration)
 
 			date := dayBegin.Format("2006-01-02")
-			for _, e := range d.Exports {
-				err := e.Export(temp, date, symbol)
-				if err != nil {
-					d.Logger.Panicf("failed to export to %s - err: %s", e.String(), err.Error())
-				}
-			}
-
-			err = temp.Close()
-			if err != nil {
-				d.Logger.Panicf("failed to close tempfile err: %s", err.Error())
-			}
-			err = os.Remove(temp.Name())
-			if err != nil {
-				d.Logger.Panicf("failed to remove tempfile err: %s", err.Error())
-			}
-
-			records = nil
+			d.Export(symbol, date, records)
 		}
+	}
+}
+
+func (d Downloader) Batch(symbol string, dayBegin, dayEnd time.Time, duration time.Duration) [][]string {
+	// Minute by Minute TODO: Other
+	var records [][]string
+	records = append(records, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
+
+	for begin := dayBegin; begin.Before(dayEnd); begin = begin.Add(duration * batchsize) {
+		end := begin.Add(duration * batchsize)
+		if end.After(dayEnd) {
+			end = dayEnd
+		}
+
+		d.Logger.Infof("Candles for begin %s - end %s", begin, end)
+		candles, err := d.Exchange.CandlesByPeriod(symbol, d.Interval, begin, end)
+		if err != nil {
+			// TODO: implement fallback
+			d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
+		}
+		for _, candle := range candles {
+			records = append(records, candle.Csv())
+		}
+	}
+	return records
+}
+
+func (d Downloader) Export(symbol, date string, records [][]string ){
+	d.Logger.Infof("Writing %s to temp file", symbol)
+	temp, err := export.WriteToTempFile(records)
+	if err != nil {
+		// TODO: implement fallback
+		d.Logger.Panicf("failed to create tempfile err: %s", err.Error())
+	}
+
+	for _, e := range d.Exports {
+		err := e.Export(temp, date, symbol)
+		if err != nil {
+			d.Logger.Panicf("failed to export to %s - err: %s", e.String(), err.Error())
+		}
+	}
+
+	err = temp.Close()
+	if err != nil {
+		d.Logger.Panicf("failed to close tempfile err: %s", err.Error())
+	}
+	err = os.Remove(temp.Name())
+	if err != nil {
+		d.Logger.Panicf("failed to remove tempfile err: %s", err.Error())
 	}
 }
