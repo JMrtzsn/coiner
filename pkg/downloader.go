@@ -50,10 +50,10 @@ func (d Downloader) Download() {
 		}
 
 		// Day by Day TODO: Other
-		for dayBegin := d.Start; dayBegin.Before(d.End); dayBegin = dayBegin.Add(day) {
-			dayEnd := dayBegin.Add(minute * minutesInaDay)
-			if dayEnd.After(d.End) {
-				dayEnd = d.End
+		for begin := d.Start; begin.Before(d.End); begin = begin.Add(day) {
+			end := begin.Add(minute * minutesInaDay)
+			if end.After(d.End) {
+				end = d.End
 			}
 
 			// TODO: move to object
@@ -62,9 +62,9 @@ func (d Downloader) Download() {
 				d.Logger.Panic("Failed to parse duration %s ", err.Error())
 			}
 
-			records := d.Batch(symbol, dayBegin, dayEnd, duration)
+			records := d.Batch(symbol, begin, end, duration)
 
-			date := dayBegin.Format("2006-01-02")
+			date := begin.Format("2006-01-02")
 			d.Export(symbol, date, records)
 		}
 	}
