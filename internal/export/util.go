@@ -21,5 +21,7 @@ func WriteToTempFile(records [][]string) (*os.File, error) {
 	return file, nil
 }
 
-// Verify integrity of data function
-// Should loop through a symbol and log all data points where data is not completed
+// TODO Verify integrity of data function(s)
+// LOCAL, BUCKET
+// Should loop through a symbol and log all data points where data is complete
+

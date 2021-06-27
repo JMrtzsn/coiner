@@ -45,7 +45,7 @@ func (d Downloader) Download() {
 			if end.After(d.End) {
 				end = d.End
 			}
-
+			d.Logger.Infof("Candles %s for begin %s - end %s", symbol, begin, end)
 			records := d.batch(symbol, begin, end, d.Duration)
 
 			date := begin.Format("2006-01-02")
@@ -67,12 +67,12 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 			end = to
 		}
 
-		d.Logger.Infof("Candles for begin %s - end %s", begin, end)
 		candles, err := d.Exchange.CandlesByPeriod(symbol, d.Interval, begin, end)
 		if err != nil {
 			// TODO: implement fallback
 			d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
 		}
+		// TODO - How to handle empty dates
 		if len(candles) > 1 {
 			for _, candle := range candles {
 				records = append(records, candle.Csv())
@@ -86,7 +86,6 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 }
 
 func (d Downloader) Export(symbol, date string, records [][]string) {
-	d.Logger.Infof("Writing %s to temp file", symbol)
 	temp, err := export.WriteToTempFile(records)
 	if err != nil {
 		// TODO: implement fallback
@@ -94,7 +93,6 @@ func (d Downloader) Export(symbol, date string, records [][]string) {
 	}
 
 	for _, e := range d.Exports {
-		d.Logger.Infof("Exporting to %s", e)
 		err := e.Export(temp, date, symbol)
 		if err != nil {
 			// TODO: implement fallback
@@ -103,7 +101,6 @@ func (d Downloader) Export(symbol, date string, records [][]string) {
 	}
 
 	// TODO: necessary?
-	d.Logger.Infof("Cleaning up temp file")
 	err = temp.Close()
 	if err != nil {
 		// TODO: implement fallback
