@@ -20,7 +20,7 @@ const day = time.Hour * 24
 type Downloader struct {
 	Exchange exchange.Exchange
 	Exports  []export.Export
-	Interval string // xm, xh, xd
+	Interval string        // xm, xh, xd
 	Duration time.Duration // minute, hour, day
 	Symbols  []string
 	Start    time.Time
@@ -73,9 +73,14 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 			// TODO: implement fallback
 			d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
 		}
-		for _, candle := range candles {
-			records = append(records, candle.Csv())
+		if len(candles) > 1 {
+			for _, candle := range candles {
+				records = append(records, candle.Csv())
+			}
+		} else {
+			d.Logger.Warnf("Recieved empty response from exchange for symbol: %s skipping date :%s - %s", symbol, begin, end)
 		}
+
 	}
 	return records
 }
@@ -89,18 +94,24 @@ func (d Downloader) Export(symbol, date string, records [][]string) {
 	}
 
 	for _, e := range d.Exports {
+		d.Logger.Infof("Exporting to %s", e)
 		err := e.Export(temp, date, symbol)
 		if err != nil {
+			// TODO: implement fallback
 			d.Logger.Panicf("failed to export to %s - err: %s", e.String(), err.Error())
 		}
 	}
 
+	// TODO: necessary?
+	d.Logger.Infof("Cleaning up temp file")
 	err = temp.Close()
 	if err != nil {
+		// TODO: implement fallback
 		d.Logger.Panicf("failed to close tempfile err: %s", err.Error())
 	}
 	err = os.Remove(temp.Name())
 	if err != nil {
+		// TODO: implement fallback
 		d.Logger.Panicf("failed to remove tempfile err: %s", err.Error())
 	}
 }

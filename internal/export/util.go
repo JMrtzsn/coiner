@@ -20,3 +20,6 @@ func WriteToTempFile(records [][]string) (*os.File, error) {
 	file.Seek(0, 0)
 	return file, nil
 }
+
+// Verify integrity of data function
+// Should loop through a symbol and log all data points where data is not completed
