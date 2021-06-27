@@ -88,15 +88,17 @@ func TestExportLocalCSV(t *testing.T) {
 }
 
 func TestExportBucketCSV(t *testing.T) {
+	// Create temp file and export
 	file, err := WriteToTempFile(records)
 	assert.Nil(t, err)
 	defer file.Close()
 	defer os.Remove(file.Name())
-
 	ctx := context.Background()
-	bucket, err := NewBucket(ctx, test)
+	// TODO assert bucket exist / load using viper?
+	path, ok := os.LookupEnv("BUCKET")
+	assert.True(t, ok)
+	bucket, err := NewBucket(ctx, test, path)
 	assert.Nil(t, err)
-
 	err = bucket.Export(file, test, test)
 	assert.Nil(t, err)
 
@@ -111,7 +113,6 @@ func TestExportBucketCSV(t *testing.T) {
 	}
 
 	// Cleanup
-	// TODO remove test file from GCP
 	err = bucket.Delete(bucket.Path(test,test))
 	assert.Nil(t, err)
 }

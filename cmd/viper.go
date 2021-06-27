@@ -6,10 +6,14 @@ import (
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/exchange/binance"
 	"github.com/jmrtzsn/coiner/internal/export"
+	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/jmrtzsn/coiner/pkg"
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	"github.com/xhit/go-str2duration/v2"
 	"go.uber.org/zap"
 	"log"
+	"os"
 	"time"
 )
 
@@ -35,6 +39,8 @@ func unMarshalViper() *Config {
 }
 
 // TODO validate input params
+// TODO opts
+// TODO move to downloader
 func ToDownloader() pkg.Downloader {
 	conf := *unMarshalViper()
 	ctx := context.Background()
@@ -44,10 +50,16 @@ func ToDownloader() pkg.Downloader {
 	End := EndTime(conf.End)
 	sugar := newLogger()
 
+	duration, err := str2duration.ParseDuration(conf.Interval)
+	if err != nil {
+		log.Panicf("Failed to parse duration %s ", err.Error())
+	}
+
 	downloader := pkg.Downloader{
 		Exchange: inputExchange,
 		Exports:  inputExport,
 		Interval: conf.Interval,
+		Duration: duration,
 		Symbols:  conf.Symbols,
 		Start:    Start,
 		End:      End,
@@ -73,10 +85,18 @@ func setExport(conf Config, ctx context.Context) []export.Export {
 		switch e {
 		case "local":
 			inputExport = append(inputExport, export.NewLocal(conf.Exchange))
-		case "storage":
-			bucket, err := export.NewBucket(ctx, conf.Exchange)
+		case "bucket":
+			if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
+				log.Fatal(err)
+			}
+			// TODO Better
+			path, ok := os.LookupEnv("BUCKET")
+			if !ok {
+				log.Fatal(ok)
+			}
+			bucket, err := export.NewBucket(ctx, conf.Exchange, path)
 			if err != nil {
-				panic(fmt.Sprintf("bucket export creation error: %s", e))
+				panic(fmt.Sprintf("bucket export creation error: %s", err))
 			}
 			inputExport = append(inputExport, bucket)
 		default:
@@ -91,6 +111,10 @@ func setExchange(conf Config, ctx context.Context) exchange.Exchange {
 	switch conf.Exchange {
 	case "binance":
 		inputExchange = &binance.Binance{}
+		// Load env vars
+		if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
+			log.Fatal(err)
+		}
 		inputExchange.Init(ctx, conf.Key, conf.Secret)
 	default:
 		panic(fmt.Sprintf("exchange not found %s", conf.Exchange))

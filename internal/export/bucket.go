@@ -4,7 +4,6 @@ import (
 	gcp "cloud.google.com/go/storage"
 	"context"
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -21,18 +20,12 @@ type Bucket struct {
 
 //
 
-func NewBucket(ctx context.Context, exchange string) (*Bucket, error) {
+func NewBucket(ctx context.Context, exchange, path string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO assert bucket exist / load using viper?
-	bucket, ok := os.LookupEnv("CLOUD_BUCKET")
-	if !ok {
-		return nil, errors.New("invalid env var")
-	}
-	bkt := *client.Bucket(bucket)
+	bkt := *client.Bucket(path)
 
 	return &Bucket{
 		bkt:      bkt,
@@ -92,7 +85,7 @@ func (b Bucket) Delete(filepath string) error {
 	return nil
 }
 
-// Path generates a exchange/symbol/date.csv path for gcp buckets
+// Path generates a exchange/symbol/date.csv path
 func (b Bucket) Path(date, symbol string) string {
 	return fmt.Sprintf("%s/%s/%s.csv", b.exchange, symbol, date)
 }

@@ -4,20 +4,24 @@ import (
 	"fmt"
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/export"
-	"github.com/xhit/go-str2duration/v2"
 	"go.uber.org/zap"
 	"os"
 	"time"
 )
 
 // TODO const per interval
-const minutesInaDay = 1439
-const batchsize = 500
+const minutesInADay = 1439
+const hoursInADay = 23
+const batchsize = 500 // Binance max batchsize
+
+// TODO input param
+const day = time.Hour * 24
 
 type Downloader struct {
 	Exchange exchange.Exchange
 	Exports  []export.Export
-	Interval string
+	Interval string // xm, xh, xd
+	Duration time.Duration // minute, hour, day
 	Symbols  []string
 	Start    time.Time
 	End      time.Time
@@ -30,39 +34,19 @@ func (d Downloader) String() string {
 }
 
 // Downloads per day, will start with whole day and move to one hour if required.
+// Download main function of coiner
 func (d Downloader) Download() {
 	defer d.Logger.Sync()
-
-	// TODO handle batchsize
-
-	// TODO switch intervsl to durstion formst
-
 	for _, symbol := range d.Symbols {
-		d.Logger.Infof("Downloading candles for Symbol: %s Start: %s End: %s using interval %s", symbol, d.Start, d.End, d.Interval)
-
-		day, err := str2duration.ParseDuration("1d")
-		if err != nil {
-			d.Logger.Panic("Failed to parse duration %s ", err.Error())
-		}
-		minute, err := str2duration.ParseDuration("1m")
-		if err != nil {
-			d.Logger.Panic("Failed to parse duration %s ", err.Error())
-		}
-
-		// Day by Day TODO: Other
+		d.Logger.Infof("Downloading candles for Symbol: %s Start: %s End: %s using interval %s",
+			symbol, d.Start, d.End, d.Interval)
 		for begin := d.Start; begin.Before(d.End); begin = begin.Add(day) {
-			end := begin.Add(minute * minutesInaDay)
+			end := begin.Add(time.Minute * minutesInADay)
 			if end.After(d.End) {
 				end = d.End
 			}
 
-			// TODO: move to object
-			duration, err := str2duration.ParseDuration(d.Interval)
-			if err != nil {
-				d.Logger.Panic("Failed to parse duration %s ", err.Error())
-			}
-
-			records := d.Batch(symbol, begin, end, duration)
+			records := d.batch(symbol, begin, end, d.Duration)
 
 			date := begin.Format("2006-01-02")
 			d.Export(symbol, date, records)
@@ -70,15 +54,17 @@ func (d Downloader) Download() {
 	}
 }
 
-func (d Downloader) Batch(symbol string, dayBegin, dayEnd time.Time, duration time.Duration) [][]string {
-	// Minute by Minute TODO: Other
+// Minute by Minute TODO: Opts -> daily weekly etc
+// TODO
+// batch creates a set of records containing data between from and to splitting by the duration
+func (d Downloader) batch(symbol string, from, to time.Time, duration time.Duration) [][]string {
+
 	var records [][]string
 	records = append(records, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-
-	for begin := dayBegin; begin.Before(dayEnd); begin = begin.Add(duration * batchsize) {
+	for begin := from; begin.Before(to); begin = begin.Add(duration * batchsize) {
 		end := begin.Add(duration * batchsize)
-		if end.After(dayEnd) {
-			end = dayEnd
+		if end.After(to) {
+			end = to
 		}
 
 		d.Logger.Infof("Candles for begin %s - end %s", begin, end)
@@ -94,7 +80,7 @@ func (d Downloader) Batch(symbol string, dayBegin, dayEnd time.Time, duration ti
 	return records
 }
 
-func (d Downloader) Export(symbol, date string, records [][]string ){
+func (d Downloader) Export(symbol, date string, records [][]string) {
 	d.Logger.Infof("Writing %s to temp file", symbol)
 	temp, err := export.WriteToTempFile(records)
 	if err != nil {

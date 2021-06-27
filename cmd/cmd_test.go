@@ -21,7 +21,7 @@ func TestLoadEnvConfig(t *testing.T) {
 		Exchange: "binance",
 		Interval: "1m",
 		Symbols:  []string{"BTCUSDT", "ETHUSDT"},
-		Exports:  []string{"local"},
+		Exports:  []string{"local", "bucket"},
 		Start:    "2019-01-01",
 		End:      "2019-01-02",
 		Key:      "test",
@@ -35,7 +35,7 @@ func TestLoadEnvConfig(t *testing.T) {
 func TestEnvToConfig(t *testing.T) {
 	LoadConfig("test")
 	got := ToDownloader()
-	want := "Exchange: Binance, Exports: [Local], Interval: 1m, Symbols: [BTCUSDT ETHUSDT]," +
+	want := "Exchange: Binance, Exports: [Local Bucket], Interval: 1m, Symbols: [BTCUSDT ETHUSDT]," +
 		" From: 2019-01-01 00:00:00 +0000 UTC, To: 2019-01-02 23:59:59 +0000 UTC"
 	assert.Equal(t, want, got.String())
 }
