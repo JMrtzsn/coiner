@@ -41,15 +41,19 @@ func (d Downloader) Download() {
 		d.Logger.Infof("Downloading candles for Symbol: %s Start: %s End: %s using interval %s",
 			symbol, d.Start, d.End, d.Interval)
 		for begin := d.Start; begin.Before(d.End); begin = begin.Add(day) {
+			date := begin.Format("2006-01-02")
 			end := begin.Add(time.Minute * minutesInADay)
 			if end.After(d.End) {
 				end = d.End
 			}
-			d.Logger.Infof("Candles %s for begin %s - end %s", symbol, begin, end)
-			records := d.batch(symbol, begin, end, d.Duration)
 
-			date := begin.Format("2006-01-02")
-			d.Export(symbol, date, records)
+			d.Logger.Infof("Downloading Candles %s for date: %s", symbol, begin)
+			records := d.batch(symbol, begin, end, d.Duration)
+			if len(records) > 2 {
+				d.Export(symbol, date, records)
+			} else {
+				d.Logger.Warnf("Recieved empty response from exchange for symbol: %s skipping date :%s - %s", symbol, begin, end)
+			}
 		}
 	}
 }
@@ -72,13 +76,10 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 			// TODO: implement fallback
 			d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
 		}
+
 		// TODO - How to handle empty dates
-		if len(candles) > 1 {
-			for _, candle := range candles {
-				records = append(records, candle.Csv())
-			}
-		} else {
-			d.Logger.Warnf("Recieved empty response from exchange for symbol: %s skipping date :%s - %s", symbol, begin, end)
+		for _, candle := range candles {
+			records = append(records, candle.Csv())
 		}
 
 	}
