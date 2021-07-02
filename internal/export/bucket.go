@@ -18,8 +18,7 @@ type Bucket struct {
 	exchange string
 }
 
-//
-
+// NewBucket constructor
 func NewBucket(ctx context.Context, exchange, path string) (*Bucket, error) {
 	client, err := gcp.NewClient(ctx)
 	if err != nil {
@@ -38,14 +37,15 @@ func (b Bucket) String() string {
 	return "Bucket"
 }
 
-func (b Bucket) Export(file *os.File, date, symbol string) error {
+// Export copies a file to a GCP bucket
+func (b Bucket) Export(csv *os.File, date, symbol string) error {
 	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
 
 	path := b.Path(date, symbol)
 	w := b.bkt.Object(path).NewWriter(ctx)
-	file.Seek(0, 0)
-	if _, err := io.Copy(w, file); err != nil {
+	csv.Seek(0, 0)
+	if _, err := io.Copy(w, csv); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)
 	}
 	if err := w.Close(); err != nil {
@@ -55,6 +55,7 @@ func (b Bucket) Export(file *os.File, date, symbol string) error {
 }
 
 // TODO: pass fileformat?
+// Read reads a bucket object into records
 func (b Bucket) Read(date, symbol string) ([][]string, error) {
 	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
 	defer cancel()
@@ -70,8 +71,6 @@ func (b Bucket) Read(date, symbol string) ([][]string, error) {
 	if _, err := io.Copy(os.Stdout, r); err != nil {
 		return nil, err
 	}
-	// TODO: Logging
-	// fmt.Fprintf(w, "Read b %v uploaded.\n", path)
 	return records, nil
 }
 

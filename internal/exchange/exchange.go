@@ -10,7 +10,7 @@ import (
 // Exchange common interface for exchange should they be implemented
 type Exchange interface {
 	Init(ctx context.Context, key, secret string)
-	CandlesByPeriod(symbol ,interval string, start, end time.Time) ([]model.Candle, error)
+	CandlesByPeriod(symbol, interval string, start, end time.Time) ([]model.Candle, error)
 }
 
 var (

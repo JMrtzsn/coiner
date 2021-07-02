@@ -30,7 +30,6 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-
 // Uses the public api key / secret doesnt matter
 func TestOHLCV(t *testing.T) {
 	start := time.Date(2020, 4, 4,
@@ -41,5 +40,5 @@ func TestOHLCV(t *testing.T) {
 	got, err := b.CandlesByPeriod("BTCUSDT", "1m", start, end)
 	assert.Nil(t, err)
 	assert.Equal(t, 60, len(got))
-	assert.Equal(t, res,  got[0])
+	assert.Equal(t, res, got[0])
 }

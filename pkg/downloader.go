@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/export"
+	"github.com/jmrtzsn/coiner/internal/model"
 	"go.uber.org/zap"
 	"os"
 	"time"
@@ -11,8 +12,8 @@ import (
 
 // TODO const per interval
 const minutesInADay = 1439
-const hoursInADay = 23
-const batchsize = 500 // Binance max batchsize
+const batchSize = 500 // Binance max batchSize
+const dateFmt = "2006-01-02"
 
 // TODO input param
 const day = time.Hour * 24
@@ -41,7 +42,7 @@ func (d Downloader) Download() {
 		d.Logger.Infof("Downloading candles for Symbol: %s Start: %s End: %s using interval %s",
 			symbol, d.Start, d.End, d.Interval)
 		for begin := d.Start; begin.Before(d.End); begin = begin.Add(day) {
-			date := begin.Format("2006-01-02")
+			date := begin.Format(dateFmt)
 			end := begin.Add(time.Minute * minutesInADay)
 			if end.After(d.End) {
 				end = d.End
@@ -60,13 +61,12 @@ func (d Downloader) Download() {
 
 // Minute by Minute TODO: Opts -> daily weekly etc
 // TODO
-// batch creates a set of records containing data between from and to splitting by the duration
+// batch creates a set of records containing data between from and to splitting by the duration, returning a day of records
 func (d Downloader) batch(symbol string, from, to time.Time, duration time.Duration) [][]string {
 
-	var records [][]string
-	records = append(records, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
-	for begin := from; begin.Before(to); begin = begin.Add(duration * batchsize) {
-		end := begin.Add(duration * batchsize)
+	records := model.RecordsWithHeader()
+	for begin := from; begin.Before(to); begin = begin.Add(duration * batchSize) {
+		end := begin.Add(duration * batchSize)
 		if end.After(to) {
 			end = to
 		}
@@ -74,7 +74,7 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 		candles, err := d.Exchange.CandlesByPeriod(symbol, d.Interval, begin, end)
 		if err != nil {
 			// TODO: implement fallback
-			d.Logger.Panicf("failed to CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
+			d.Logger.Panicf("failed to execute CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())
 		}
 
 		// TODO - How to handle empty dates

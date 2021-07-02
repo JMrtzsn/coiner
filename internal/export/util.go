@@ -24,4 +24,3 @@ func WriteToTempFile(records [][]string) (*os.File, error) {
 // TODO Verify integrity of data function(s)
 // LOCAL, BUCKET
 // Should loop through a symbol and log all data points where data is complete
-

@@ -13,16 +13,18 @@ type Local struct {
 	exchange string
 }
 
+// NewLoca
 func NewLocal(exchange string) *Local {
 	return &Local{
 		exchange: exchange,
 	}
 }
 
-func (l Local) String() string{
+func (l Local) String() string {
 	return "Local"
 }
 
+// Read from string path
 func (l Local) Read(path string) ([][]string, error) {
 	csvfile, err := os.Open(path)
 	if err != nil {
@@ -36,7 +38,8 @@ func (l Local) Read(path string) ([][]string, error) {
 	return records, nil
 }
 
-func (l Local) Export(input *os.File, date, symbol string) error {
+// Export copies file to symbol/date folder
+func (l Local) Export(csv *os.File, date, symbol string) error {
 	output, err := func() (*os.File, error) {
 		dir := l.DirPath(symbol)
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -52,8 +55,8 @@ func (l Local) Export(input *os.File, date, symbol string) error {
 	}()
 	defer output.Close()
 
-	input.Seek(0, 0)
-	_, err = io.Copy(output, input)
+	csv.Seek(0, 0)
+	_, err = io.Copy(output, csv)
 	if err != nil {
 		return err
 	}

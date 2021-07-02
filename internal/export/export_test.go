@@ -49,7 +49,12 @@ var (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
-	records = model.ToRecords(data)
+
+	records := model.RecordsWithHeader()
+	for _, row := range data {
+		records = append(records, row.Csv())
+	}
+
 	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
@@ -62,8 +67,6 @@ func TestExportLocalCSV(t *testing.T) {
 	file, err := WriteToTempFile(records)
 	l := NewLocal(test)
 	assert.Nil(t, err)
-
-
 
 	err = l.Export(file, test, test)
 	assert.Nil(t, err)
@@ -113,6 +116,6 @@ func TestExportBucketCSV(t *testing.T) {
 	}
 
 	// Cleanup
-	err = bucket.Delete(bucket.Path(test,test))
+	err = bucket.Delete(bucket.Path(test, test))
 	assert.Nil(t, err)
 }
