@@ -5,6 +5,7 @@ import (
 )
 
 type Export interface {
+	// TODO: pass buffer?
 	Export(csv *os.File, symbol string, date string) error
 	String() string
 }
