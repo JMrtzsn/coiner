@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/internal/projectpath"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -27,7 +29,11 @@ func Execute() error {
 
 // Run function is run when root is executed.
 func Run(cmd *cobra.Command, args []string) {
-	downloader := ToDownloader()
+	conf := UnMarshal()
+	downloader, err := conf.Downloader(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	downloader.Logger.Infof("Running on: %s ", downloader.String())
 	downloader.Download()
 }
@@ -41,18 +47,16 @@ func init() {
 	rootCmd.Flags().StringP("interval", "i", "", "Interval (optional) defaults to 1m")
 	rootCmd.Flags().StringSlice("symbols", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
 	rootCmd.Flags().StringSlice("exports", []string{}, "comma separated output list: --exports=\"local,bucket\"")
-	// TODO move to env load setup
 	rootCmd.Flags().StringP("start", "s", "", "Start: 2019-01-01 (defaults to today)")
 	rootCmd.Flags().StringP("end", "d", "", "End: 2019-01-02 (defaults to today)")
 
 }
 
-// initConfig is executed on each commands run function
+// initConfig loads env vars
 func initConfig() {
-	if cfg != "" {
-		LoadConfig(cfg)
-	} else {
-		LoadConfig("test")
+	LoadConfig(cfg)
+	if err := godotenv.Load(fmt.Sprintf("%s/%s.env", projectpath.Root, cfg)); err != nil {
+		log.Fatal(err)
 	}
 }
 

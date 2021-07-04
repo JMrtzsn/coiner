@@ -11,6 +11,7 @@ import (
 type Exchange interface {
 	Init(ctx context.Context, key, secret string)
 	CandlesByPeriod(symbol, interval string, start, end time.Time) ([]model.Candle, error)
+	String() string
 }
 
 var (

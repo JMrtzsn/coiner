@@ -13,7 +13,6 @@ type Local struct {
 	exchange string
 }
 
-// NewLoca
 func NewLocal(exchange string) *Local {
 	return &Local{
 		exchange: exchange,

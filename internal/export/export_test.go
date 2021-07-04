@@ -50,7 +50,7 @@ var (
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
 
-	records := model.RecordsWithHeader()
+	records = model.RecordsWithHeader()
 	for _, row := range data {
 		records = append(records, row.Csv())
 	}

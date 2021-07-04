@@ -1,9 +1,12 @@
 package pkg_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/cmd"
 	"github.com/jmrtzsn/coiner/internal/export"
+	"github.com/jmrtzsn/coiner/internal/projectpath"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
@@ -12,7 +15,9 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up download testing suite!")
-
+	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath.Root)); err != nil {
+		log.Fatal(err)
+	}
 	exitVal := m.Run()
 	log.Println("Completed download testing suite!")
 	os.Exit(exitVal)
@@ -21,8 +26,11 @@ func TestMain(m *testing.M) {
 func TestDownload(t *testing.T) {
 	// Will download 2 days
 	cmd.LoadConfig("test")
-	downloader := cmd.ToDownloader()
+	conf := cmd.UnMarshal()
+	downloader, err := conf.Downloader(context.Background())
+	assert.Nil(t, err)
 	downloader.Download()
+
 	date1 := "2019-01-01"
 	date2 := "2019-01-02"
 	btcusdt := "BTCUSDT"

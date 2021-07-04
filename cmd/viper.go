@@ -6,9 +6,7 @@ import (
 	"github.com/jmrtzsn/coiner/internal/exchange"
 	"github.com/jmrtzsn/coiner/internal/exchange/binance"
 	"github.com/jmrtzsn/coiner/internal/export"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
 	"github.com/jmrtzsn/coiner/pkg"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	"github.com/xhit/go-str2duration/v2"
 	"go.uber.org/zap"
@@ -18,6 +16,7 @@ import (
 )
 
 // Config contain program input (loaded from env hence the mapstructure all caps)
+// TODO Load env vars ?
 type Config struct {
 	Exchange string   `mapstructure:"EXCHANGE"` // binance
 	Interval string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
@@ -25,115 +24,124 @@ type Config struct {
 	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
 	Start    string   `mapstructure:"START"`    // 2020-04-04
 	End      string   `mapstructure:"END"`      // 2020-04-05
-	Key      string   `mapstructure:"KEY"`      // exchange key
-	Secret   string   `mapstructure:"SECRET"`   // exchange secret
+	Key      string
+	Secret   string
+	Bucket   string
 }
 
-func unMarshalViper() *Config {
+func UnMarshal() *Config {
 	config := &Config{}
 	err := viper.Unmarshal(config)
 	if err != nil {
 		log.Fatalf("unable to decode config into struct, %v", err)
 	}
+
+	config.Key = lookupStrict("KEY")
+	config.Secret = lookupStrict("SECRET")
+	config.Bucket = lookupStrict("BUCKET")
+	_ = lookupStrict("GOOGLE_APPLICATION_CREDENTIALS")
+
 	return config
 }
 
-// TODO validate input params
-// TODO opts
-// TODO move to downloader
-func ToDownloader() pkg.Downloader {
-	conf := *unMarshalViper()
-	ctx := context.Background()
-	inputExchange := setExchange(conf, ctx)
-	inputExport := setExport(conf, ctx)
-	Start := StartTime(conf.Start)
-	End := EndTime(conf.End)
-	sugar := newLogger()
+func lookupStrict(key string) string {
+	key, ok := os.LookupEnv(key)
+	if !ok {
+		log.Panic(ok)
+	}
+	return key
+}
 
-	duration, err := str2duration.ParseDuration(conf.Interval)
-	if err != nil {
-		log.Panicf("Failed to parse duration %s ", err.Error())
+func (conf Config) Downloader(ctx context.Context) (*pkg.Downloader, error) {
+	ex, err := conf.getExchange(ctx)
+	if err != nil{
+		return nil, err
+	}
+	exp, err := conf.getExports(ctx)
+	if err != nil{
+		return nil, err
+	}
+	s, err := start(conf.Start)
+	if err != nil{
+		return nil, err
+	}
+	e, err := end(conf.End)
+	if err != nil{
+		return nil, err
+	}
+	d, err := str2duration.ParseDuration(conf.Interval)
+	if err != nil{
+		return nil, err
+	}
+	l, err := newLogger()
+	if err != nil{
+		return nil, err
 	}
 
-	downloader := pkg.Downloader{
-		Exchange: inputExchange,
-		Exports:  inputExport,
+	return &pkg.Downloader{
+		Exchange: ex,
+		Exports:  exp,
 		Interval: conf.Interval,
-		Duration: duration,
+		Duration: d,
 		Symbols:  conf.Symbols,
-		Start:    Start,
-		End:      End,
-		Logger:   sugar,
-	}
-
-	return downloader
+		Start:    s,
+		End:      e,
+		Logger:   l,
+	}, nil
 }
 
-func newLogger() *zap.SugaredLogger {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalf("can't initialize zap logger: %v", err)
-	}
-	defer logger.Sync()
-	sugar := logger.Sugar()
-	return sugar
-}
-
-func setExport(conf Config, ctx context.Context) []export.Export {
-	var inputExport []export.Export
+func (conf Config) getExports(ctx context.Context) ([]export.Export, error) {
+	var exports []export.Export
 	for _, e := range conf.Exports {
 		switch e {
 		case "local":
-			inputExport = append(inputExport, export.NewLocal(conf.Exchange))
+			exports = append(exports, export.NewLocal(conf.Exchange))
 		case "bucket":
-			if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
-				log.Fatal(err)
-			}
-			// TODO Better
-			path, ok := os.LookupEnv("BUCKET")
-			if !ok {
-				log.Fatal(ok)
-			}
-			bucket, err := export.NewBucket(ctx, conf.Exchange, path)
+			bucket, err := export.NewBucket(ctx, conf.Exchange, conf.Bucket)
 			if err != nil {
-				panic(fmt.Sprintf("bucket export creation error: %s", err))
+				return nil, err
 			}
-			inputExport = append(inputExport, bucket)
+			exports = append(exports, bucket)
 		default:
-			panic(fmt.Sprintf("export not found %s", e))
+			return nil, fmt.Errorf("export not found %s", e)
 		}
 	}
-	return inputExport
+	return exports, nil
 }
 
-func setExchange(conf Config, ctx context.Context) exchange.Exchange {
-	var inputExchange exchange.Exchange
+func (conf Config) getExchange(ctx context.Context) (exchange.Exchange, error) {
 	switch conf.Exchange {
 	case "binance":
-		inputExchange = &binance.Binance{}
-		// Load env vars
-		if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
-			log.Fatal(err)
-		}
-		inputExchange.Init(ctx, conf.Key, conf.Secret)
+		b := &binance.Binance{}
+		b.Init(ctx, conf.Key, conf.Secret)
+		return b, nil
 	default:
-		panic(fmt.Sprintf("exchange not found %s", conf.Exchange))
+		return nil, fmt.Errorf("exchange not found %s", conf.Exchange)
 	}
-	return inputExchange
 }
 
-func StartTime(input string) time.Time {
+func start(input string) (time.Time, error) {
 	t, err := time.Parse(time.RFC3339, input+"T00:00:00.000Z")
 	if err != nil {
-		panic(fmt.Sprintf("failed to convert time %s", t))
+		return time.Time{}, err
 	}
-	return t
+	return t, nil
 }
 
-func EndTime(input string) time.Time {
+func end(input string) (time.Time, error) {
 	t, err := time.Parse(time.RFC3339, input+"T23:59:59.000Z")
 	if err != nil {
-		panic(fmt.Sprintf("failed to convert time %s", t))
+		return time.Time{}, err
 	}
-	return t
+	return t, nil
+}
+
+func newLogger() (*zap.SugaredLogger, error) {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		return nil, err
+	}
+	defer logger.Sync()
+	sugar := logger.Sugar()
+	return sugar, nil
 }
