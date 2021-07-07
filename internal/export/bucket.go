@@ -76,8 +76,11 @@ func (b Bucket) Read(date, symbol string) ([][]string, error) {
 
 // Delete the folder/file
 func (b Bucket) Delete(filepath string) error {
+	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)
+	defer cancel()
+
 	obj := b.bkt.Object(filepath)
-	err := obj.Delete(b.ctx)
+	err := obj.Delete(ctx)
 	if err != nil {
 		return err
 	}
