@@ -3,7 +3,7 @@ package export
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
+	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
 	"io"
 	"os"
 	"path/filepath"
@@ -64,5 +64,5 @@ func (l Local) Export(csv *os.File, date, symbol string) error {
 
 // DirPath generates a exchange/symbol/date.csv path for local storage
 func (l Local) DirPath(symbol string) string {
-	return filepath.Join(projectpath.Root, l.exchange, symbol)
+	return filepath.Join(projectpath2.Root, l.exchange, symbol)
 }

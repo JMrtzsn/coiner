@@ -3,7 +3,7 @@ package binance
 import (
 	"context"
 	"github.com/adshao/go-binance/v2"
-	"github.com/jmrtzsn/coiner/internal/model"
+	model2 "github.com/jmrtzsn/coiner/pkg/model"
 	"strconv"
 	"time"
 )
@@ -30,7 +30,7 @@ func (e *Binance) String() string {
 // start: datetime ISO RFC3339 - "2020-04-04 T12:07:00"
 // end: UNIX datetime - 1499040000000
 // limit: rows returned - 10
-func (e *Binance) Candles(symbol, interval string, start, end time.Time) ([]model.Candle, error) {
+func (e *Binance) Candles(symbol, interval string, start, end time.Time) ([]model2.Candle, error) {
 	candles, err := e.client.
 		NewKlinesService().
 		Symbol(symbol).
@@ -43,17 +43,17 @@ func (e *Binance) Candles(symbol, interval string, start, end time.Time) ([]mode
 		return nil, err
 	}
 
-	var ohlcvs []model.Candle
+	var ohlcvs []model2.Candle
 	for _, c := range candles {
 		ohlcvs = append(ohlcvs, OHLCV(c))
 	}
 	return ohlcvs, nil
 }
 
-func OHLCV(b *binance.Kline) model.Candle {
+func OHLCV(b *binance.Kline) model2.Candle {
 	dt := fromBinanceTime(b.OpenTime)
 	ts := strconv.Itoa(int(b.OpenTime) / 1000)
-	o := model.Candle{
+	o := model2.Candle{
 		DATE:   dt,
 		TS:     ts,
 		OPEN:   b.Open,

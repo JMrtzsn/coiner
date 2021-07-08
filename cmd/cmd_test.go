@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
+	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -13,7 +13,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up CMD testing suite!")
-	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath2.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()

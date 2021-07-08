@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
+	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,14 +55,14 @@ func init() {
 // initConfig loads env vars
 func initConfig() {
 	LoadConfig(cfg)
-	if err := godotenv.Load(fmt.Sprintf("%s/%s.env", projectpath.Root, cfg)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/%s.env", projectpath2.Root, cfg)); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func LoadConfig(name string) {
 	// Currently only env files are supported
-	viper.AddConfigPath(projectpath.Root)
+	viper.AddConfigPath(projectpath2.Root)
 	viper.SetConfigName(name)
 	viper.SetConfigType("env")
 

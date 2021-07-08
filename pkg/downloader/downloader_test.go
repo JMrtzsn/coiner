@@ -1,11 +1,11 @@
-package pkg_test
+package downloader_test
 
 import (
 	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/cmd"
-	"github.com/jmrtzsn/coiner/internal/export"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
+	export2 "github.com/jmrtzsn/coiner/pkg/export"
+	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -15,7 +15,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up download testing suite!")
-	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath2.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()
@@ -38,7 +38,7 @@ func TestDownload(t *testing.T) {
 
 	t.Run("Local", func(t *testing.T) {
 		// Read and assert everything is correct
-		local, _ := downloader.Exports[0].(*export.Local)
+		local, _ := downloader.Exports[0].(*export2.Local)
 
 		btc := local.DirPath(btcusdt) + fmt.Sprintf("/%s.csv", date1)
 		got, err := local.Read(btc)
@@ -68,7 +68,7 @@ func TestDownload(t *testing.T) {
 	t.Run("Bucket", func(t *testing.T) {
 
 		// Read and assert everything is correct
-		bucket, _ := downloader.Exports[1].(*export.Bucket)
+		bucket, _ := downloader.Exports[1].(*export2.Bucket)
 		got, err := bucket.Read(date1, btcusdt)
 		assert.Nil(t, err)
 		if len(got) > 1 {

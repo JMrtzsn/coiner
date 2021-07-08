@@ -3,8 +3,8 @@ package export
 import (
 	"context"
 	"fmt"
-	"github.com/jmrtzsn/coiner/internal/model"
-	"github.com/jmrtzsn/coiner/internal/projectpath"
+	model2 "github.com/jmrtzsn/coiner/pkg/model"
+	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-var data = []model.Candle{
+var data = []model2.Candle{
 	{
 		DATE:   "2020-04-04T12:00:00Z",
 		TS:     "1586001600",
@@ -50,12 +50,12 @@ var (
 func TestMain(m *testing.M) {
 	log.Println("Setting up export testing suite!")
 
-	records = model.RecordsWithHeader()
+	records = model2.RecordsWithHeader()
 	for _, row := range data {
 		records = append(records, row.CSV())
 	}
 
-	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath2.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()
