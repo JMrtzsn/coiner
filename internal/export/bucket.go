@@ -54,7 +54,6 @@ func (b Bucket) Export(csv *os.File, date, symbol string) error {
 	return nil
 }
 
-
 // Read reads a bucket object into records
 func (b Bucket) Read(date, symbol string) ([][]string, error) {
 	ctx, cancel := context.WithTimeout(b.ctx, time.Second*timeout)

@@ -30,7 +30,7 @@ func (e *Binance) String() string {
 // start: datetime ISO RFC3339 - "2020-04-04 T12:07:00"
 // end: UNIX datetime - 1499040000000
 // limit: rows returned - 10
-func (e *Binance) CandlesByPeriod(symbol, interval string, start, end time.Time) ([]model.Candle, error) {
+func (e *Binance) Candles(symbol, interval string, start, end time.Time) ([]model.Candle, error) {
 	candles, err := e.client.
 		NewKlinesService().
 		Symbol(symbol).

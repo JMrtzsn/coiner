@@ -50,7 +50,7 @@ func (d Downloader) Download() {
 			}
 			d.Logger.Infof("Downloading Candles %s for date: %s", symbol, begin)
 			records, err := d.batch(symbol, begin, end, d.Duration)
-			if err != nil{
+			if err != nil {
 				d.Logger.Panicf(err.Error())
 			}
 
@@ -75,7 +75,7 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 		if end.After(to) {
 			end = to
 		}
-		candles, err := d.Exchange.CandlesByPeriod(symbol, d.Interval, begin, end)
+		candles, err := d.Exchange.Candles(symbol, d.Interval, begin, end)
 		if err != nil {
 			// TODO: switch on error type and try again if necessary
 			return nil, fmt.Errorf("failed to execute CandlesByPeriod symbol: %s - err: %s", symbol, err.Error())

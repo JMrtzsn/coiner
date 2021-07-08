@@ -17,16 +17,16 @@ import (
 // Config contain program input (loaded from env hence the mapstructure all caps)
 // TODO Load env vars ?
 type Config struct {
-	Exchange string   `mapstructure:"EXCHANGE"` // binance
-	Interval string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
-	Symbols  []string `mapstructure:"SYMBOLS"`  // BTCUSDT, ETHUSDT
-	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
-	Start    string   `mapstructure:"START"`    // 2020-04-04
-	End      string   `mapstructure:"END"`      // 2020-04-05
-	Key      string	 `mapstructure:"KEY"`      // 2020-04-05
-	Secret   string  `mapstructure:"SECRET"`      // 2020-04-05
-	Bucket   string  `mapstructure:"BUCKET"`      // 2020-04-05
-	Credentials string `mapstructure:"GOOGLE_APPLICATION_CREDENTIALS"`
+	Exchange    string   `mapstructure:"EXCHANGE"` // binance
+	Interval    string   `mapstructure:"INTERVAL"` // 1d, 1h, 15m, 1m
+	Symbols     []string `mapstructure:"SYMBOLS"`  // BTCUSDT, ETHUSDT
+	Exports     []string `mapstructure:"EXPORTS"`  // local, bucket
+	Start       string   `mapstructure:"START"`    // 2020-04-04
+	End         string   `mapstructure:"END"`      // 2020-04-05
+	Key         string   `mapstructure:"KEY"`      // 2020-04-05
+	Secret      string   `mapstructure:"SECRET"`   // 2020-04-05
+	Bucket      string   `mapstructure:"BUCKET"`   // 2020-04-05
+	Credentials string   `mapstructure:"GOOGLE_APPLICATION_CREDENTIALS"`
 }
 
 func UnMarshal() *Config {
