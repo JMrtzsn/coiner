@@ -21,7 +21,7 @@ func TestCSV(t *testing.T) {
 
 	got := RecordsWithHeader()
 	for _, row := range data {
-		got = append(got, row.Csv())
+		got = append(got, row.CSV())
 	}
 
 	assert.Equal(t, got[0], []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})

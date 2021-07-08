@@ -11,7 +11,6 @@ import (
 	"github.com/xhit/go-str2duration/v2"
 	"go.uber.org/zap"
 	"log"
-	"os"
 	"time"
 )
 
@@ -24,9 +23,10 @@ type Config struct {
 	Exports  []string `mapstructure:"EXPORTS"`  // local, bucket
 	Start    string   `mapstructure:"START"`    // 2020-04-04
 	End      string   `mapstructure:"END"`      // 2020-04-05
-	Key      string
-	Secret   string
-	Bucket   string
+	Key      string	 `mapstructure:"KEY"`      // 2020-04-05
+	Secret   string  `mapstructure:"SECRET"`      // 2020-04-05
+	Bucket   string  `mapstructure:"BUCKET"`      // 2020-04-05
+	Credentials string `mapstructure:"GOOGLE_APPLICATION_CREDENTIALS"`
 }
 
 func UnMarshal() *Config {
@@ -35,54 +35,40 @@ func UnMarshal() *Config {
 	if err != nil {
 		log.Fatalf("unable to decode config into struct, %v", err)
 	}
-
-	config.Key = lookupStrict("KEY")
-	config.Secret = lookupStrict("SECRET")
-	config.Bucket = lookupStrict("BUCKET")
-	_ = lookupStrict("GOOGLE_APPLICATION_CREDENTIALS")
-
 	return config
 }
 
-func lookupStrict(key string) string {
-	key, ok := os.LookupEnv(key)
-	if !ok {
-		log.Panic(ok)
-	}
-	return key
-}
-
-func (conf Config) Downloader(ctx context.Context) (*pkg.Downloader, error) {
-	ex, err := conf.getExchange(ctx)
-	if err != nil{
+func (conf Config) NewDownloader(ctx context.Context) (*pkg.Downloader, error) {
+	exchang, err := conf.setupExchange(ctx)
+	if err != nil {
 		return nil, err
 	}
-	exp, err := conf.getExports(ctx)
-	if err != nil{
+	exports, err := conf.setupExports(ctx)
+	if err != nil {
 		return nil, err
 	}
 	s, err := start(conf.Start)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	e, err := end(conf.End)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
-	d, err := str2duration.ParseDuration(conf.Interval)
-	if err != nil{
+	dur, err := str2duration.ParseDuration(conf.Interval)
+	if err != nil {
 		return nil, err
 	}
 	l, err := newLogger()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	return &pkg.Downloader{
-		Exchange: ex,
-		Exports:  exp,
+		Exchange: exchang,
+		Exports:  exports,
 		Interval: conf.Interval,
-		Duration: d,
+		Duration: dur,
 		Symbols:  conf.Symbols,
 		Start:    s,
 		End:      e,
@@ -90,7 +76,7 @@ func (conf Config) Downloader(ctx context.Context) (*pkg.Downloader, error) {
 	}, nil
 }
 
-func (conf Config) getExports(ctx context.Context) ([]export.Export, error) {
+func (conf Config) setupExports(ctx context.Context) ([]export.Export, error) {
 	var exports []export.Export
 	for _, e := range conf.Exports {
 		switch e {
@@ -109,7 +95,7 @@ func (conf Config) getExports(ctx context.Context) ([]export.Export, error) {
 	return exports, nil
 }
 
-func (conf Config) getExchange(ctx context.Context) (exchange.Exchange, error) {
+func (conf Config) setupExchange(ctx context.Context) (exchange.Exchange, error) {
 	switch conf.Exchange {
 	case "binance":
 		b := &binance.Binance{}

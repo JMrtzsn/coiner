@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 
 	records = model.RecordsWithHeader()
 	for _, row := range data {
-		records = append(records, row.Csv())
+		records = append(records, row.CSV())
 	}
 
 	if err := godotenv.Load(fmt.Sprintf("%s/prod.env", projectpath.Root)); err != nil {

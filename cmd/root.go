@@ -30,7 +30,7 @@ func Execute() error {
 // Run function is run when root is executed.
 func Run(cmd *cobra.Command, args []string) {
 	conf := UnMarshal()
-	downloader, err := conf.Downloader(context.Background())
+	downloader, err := conf.NewDownloader(context.Background())
 	if err != nil {
 		panic(err)
 	}

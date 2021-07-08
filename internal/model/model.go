@@ -17,6 +17,6 @@ func RecordsWithHeader() [][]string {
 	return append([][]string{}, []string{"DATE", "TS", "OPEN", "CLOSE", "HIGH", "LOW", "VOLUME"})
 }
 
-func (d *Candle) Csv() []string {
+func (d *Candle) CSV() []string {
 	return []string{d.DATE, d.TS, d.OPEN, d.CLOSE, d.HIGH, d.LOW, d.VOLUME}
 }

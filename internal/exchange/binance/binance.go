@@ -37,6 +37,7 @@ func (e *Binance) CandlesByPeriod(symbol, interval string, start, end time.Time)
 		Interval(interval).
 		StartTime(toBinanceTime(start)).
 		EndTime(toBinanceTime(end)).
+		// TODO ctx timeout?
 		Do(e.ctx)
 	if err != nil {
 		return nil, err

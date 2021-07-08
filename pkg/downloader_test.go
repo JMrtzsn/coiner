@@ -27,7 +27,7 @@ func TestDownload(t *testing.T) {
 	// Will download 2 days
 	cmd.LoadConfig("test")
 	conf := cmd.UnMarshal()
-	downloader, err := conf.Downloader(context.Background())
+	downloader, err := conf.NewDownloader(context.Background())
 	assert.Nil(t, err)
 	downloader.Download()
 
