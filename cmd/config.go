@@ -18,19 +18,18 @@ import (
 // Config contain program input (loaded from env hence the mapstructure all caps)
 // Uses: https://github.com/mitchellh/mapstructure
 type Config struct {
-	Exchange        string   `mapstructure:"EXCHANGE,omitempty"` // binance
-	Interval        string   `mapstructure:"INTERVAL,omitempty"` // 1d, 1h, 15m, 1m
-	Symbols         []string `mapstructure:"SYMBOLS,omitempty"`  // BTCUSDT, ETHUSDT
-	Exports         []string `mapstructure:"EXPORTS,omitempty"`  // local, bucket
-	Start           string   `mapstructure:"START,omitempty"`    // 2020-04-04
-	End             string   `mapstructure:"END,omitempty"`      // 2020-04-05
-	Key             string   `mapstructure:"KEY,omitempty"`      // Exchange key
-	Secret          string   `mapstructure:"SECRET,omitempty"`   // Exchange secret
-	Bucket          string   `mapstructure:"BUCKET,omitempty"`   // GCP Bucket
-	Credentials     string   `mapstructure:"GOOGLE_APPLICATION_CREDENTIALS,omitempty"`
-	TelegramID      string   `mapstructure:"TELEGRAM_ID,omitempty"`
-	TelegramKey     string   `mapstructure:"TELEGRAM_KEY,omitempty"`
-	TelegramChannel string   `mapstructure:"TELEGRAM_CHANNEL,omitempty"`
+	Exchange        string   `mapstructure:"EXCHANGE,omitempty"`                       // binance
+	Interval        string   `mapstructure:"INTERVAL,omitempty"`                       // 1d, 1h, 15m, 1m
+	Symbols         []string `mapstructure:"SYMBOLS,omitempty"`                        // BTCUSDT, ETHUSDT
+	Exports         []string `mapstructure:"EXPORTS,omitempty"`                        // local, bucket
+	Start           string   `mapstructure:"START,omitempty"`                          // 2020-04-04
+	End             string   `mapstructure:"END,omitempty"`                            // 2020-04-05
+	Key             string   `mapstructure:"KEY,omitempty"`                            // Exchange key
+	Secret          string   `mapstructure:"SECRET,omitempty"`                         // Exchange secret
+	Bucket          string   `mapstructure:"BUCKET,omitempty"`                         // GCP Bucket
+	Credentials     string   `mapstructure:"GOOGLE_APPLICATION_CREDENTIALS,omitempty"` // GCP credentials file
+	TelegramBot     string   `mapstructure:"TELEGRAM_BOT,omitempty"`                   // Bot string
+	TelegramChannel string   `mapstructure:"TELEGRAM_CHANNEL,omitempty"`               // Channel id, check bot/getUpdates
 }
 
 func UnMarshal() *Config {
@@ -42,7 +41,8 @@ func UnMarshal() *Config {
 	return config
 }
 
-// TODO Downloader opts pattern
+// TODO: Downloader opts pattern
+// NewDownloader move to Downloader implement default values etc
 func (conf Config) NewDownloader(ctx context.Context) (*downloader.Downloader, error) {
 	exchang, err := conf.setupExchange(ctx)
 	if err != nil {
@@ -70,8 +70,7 @@ func (conf Config) NewDownloader(ctx context.Context) (*downloader.Downloader, e
 	}
 
 	notifier := notification.NewTelegram(
-		conf.TelegramID,
-		conf.TelegramKey,
+		conf.TelegramBot,
 		conf.TelegramChannel,
 	)
 
@@ -84,7 +83,7 @@ func (conf Config) NewDownloader(ctx context.Context) (*downloader.Downloader, e
 		Start:    s,
 		End:      e,
 		Logger:   l,
-		Notifier: notifier,
+		Telegram: notifier,
 	}, nil
 }
 

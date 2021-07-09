@@ -26,8 +26,7 @@ func TestLoadConfig(t *testing.T) {
 	conf := UnMarshal()
 	got, err := conf.NewDownloader(context.Background())
 	assert.Nil(t, err)
-	want := "Exchange: Binance, Exports: [Local Bucket], Interval: 1m, Symbols: [BTCUSDT ETHUSDT]," +
-		" From: 2019-01-01 00:00:00 +0000 UTC, To: 2019-01-02 23:59:59 +0000 UTC"
+	want := "\nExchange: Binance, \nExports: [Local Bucket], \nInterval: 1m, \nSymbols: [BTCUSDT ETHUSDT], \nFrom: 2019-01-01, \nTo: 2019-01-02"
 	assert.Equal(t, want, got.String())
 }
 

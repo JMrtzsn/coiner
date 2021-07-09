@@ -54,7 +54,10 @@ func (l Local) Export(csv *os.File, date, symbol string) error {
 	}()
 	defer output.Close()
 
-	csv.Seek(0, 0)
+	_, err = csv.Seek(0, 0)
+	if err != nil {
+		return err
+	}
 	_, err = io.Copy(output, csv)
 	if err != nil {
 		return err

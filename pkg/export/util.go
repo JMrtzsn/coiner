@@ -17,7 +17,10 @@ func WriteToTempFile(records [][]string) (*os.File, error) {
 
 	// Seek the pointer to the beginning
 	// TODO return buffer? function that resets file when reading
-	file.Seek(0, 0)
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
 	return file, nil
 }
 

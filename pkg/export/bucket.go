@@ -44,7 +44,10 @@ func (b Bucket) Export(csv *os.File, date, symbol string) error {
 
 	path := b.Path(date, symbol)
 	w := b.bkt.Object(path).NewWriter(ctx)
-	csv.Seek(0, 0)
+	_, err := csv.Seek(0, 0)
+	if err != nil {
+		return err
+	}
 	if _, err := io.Copy(w, csv); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)
 	}

@@ -4,26 +4,22 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-
 )
 
 type Telegram struct {
-	ID        string
-	Key       string
+	Bot       string
 	ChannelID string
-
 }
 
-func NewTelegram(id string, key string, channel string) Telegram {
+func NewTelegram(key string, channel string) Telegram {
 	return Telegram{
-		ID:        id,
-		Key:       key,
+		Bot:       key,
 		ChannelID: channel,
 	}
 }
 
 func (t Telegram) Notify(text string) error {
-	baseURL, err := url.Parse(fmt.Sprintf("https://api.telegram.org/bot%s:%s/sendMessage", t.ID, t.Key))
+	baseURL, err := url.Parse(fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Bot))
 	if err != nil {
 		return err
 	}
@@ -45,8 +41,12 @@ func (t Telegram) Notify(text string) error {
 	return nil
 }
 
-func (t Telegram) OnError(err error) {
+func (t Telegram) OnError(err error) error {
 	title := "🛑 ERROR"
 	message := fmt.Sprintf("%s\n-----\n%s", title, err)
-	t.Notify(message)
+	err = t.Notify(message)
+	if err != nil {
+		return err
+	}
+	return nil
 }

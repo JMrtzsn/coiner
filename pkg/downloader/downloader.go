@@ -21,18 +21,18 @@ const (
 type Downloader struct {
 	Exchange exchange2.Exchange
 	Exports  []export2.Export
-	Interval string        // xm, xh, xd
-	Duration time.Duration // minute, hour, day
+	Interval string
+	Duration time.Duration
 	Symbols  []string
 	Start    time.Time
 	End      time.Time
 	Logger   *zap.SugaredLogger
-	Notifier notification.Telegram
+	Telegram notification.Telegram
 }
 
 func (d Downloader) String() string {
-	return fmt.Sprintf("Exchange: %s, Exports: %s, Interval: %v, Symbols: %v, From: %s, To: %s",
-		d.Exchange, d.Exports, d.Interval, d.Symbols, d.Start, d.End)
+	return fmt.Sprintf("\nExchange: %s, \nExports: %s, \nInterval: %v, \nSymbols: %v, \nFrom: %s, \nTo: %s",
+		d.Exchange, d.Exports, d.Interval, d.Symbols, d.Start.Format(YMD), d.End.Format(YMD))
 }
 
 // Download main function of coiner, downloads files daily
@@ -53,15 +53,20 @@ func (d Downloader) Download() {
 			d.Logger.Infof("Downloading Candles %s for date: %s", symbol, begin)
 			records, err := d.batch(symbol, begin, end, d.Duration)
 			if err != nil {
-				d.Notifier.OnError(err)
-				// TODO if telegram
+				err := d.Telegram.OnError(err)
+				if err != nil {
+					d.Logger.Errorf(err.Error())
+				}
 				d.Logger.Panicf(err.Error())
 			}
 
 			if len(records) > 2 {
-				if err := d.Export(symbol, date, records); err != nil {
+				if err = d.Export(symbol, date, records); err != nil {
 					d.Logger.Errorf(err.Error())
-					d.Notifier.OnError(err)
+					err := d.Telegram.OnError(err)
+					if err != nil {
+						d.Logger.Errorf(err.Error())
+					}
 				}
 			} else {
 				d.Logger.Infof("Recieved empty response from exchange for symbol: %s"+
@@ -69,7 +74,13 @@ func (d Downloader) Download() {
 			}
 		}
 	}
-	d.Notifier.Notify(fmt.Sprintf("✅ Download Completed - Start: %s End: %s", d.Start, d.End))
+	// TODO pretty
+	if d.Telegram.Bot != "" {
+		err := d.Telegram.Notify(fmt.Sprintf("✅ Download Completed: \n%s", d.String()))
+		if err != nil {
+			d.Logger.Errorf(err.Error())
+		}
+	}
 }
 
 // Minute by Minute TODO fix
