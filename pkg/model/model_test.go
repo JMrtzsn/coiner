@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCSV(t *testing.T) {
+func TestRecords(t *testing.T) {
 	var data = []Candle{
 		{
 			DATE:   "2020-04-04T12:00:00Z",
