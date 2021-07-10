@@ -1,5 +1,0 @@
-Design doc:
-- Coiner is a simple golang interface package containing implementations of crypto exchanges that satisfy that interface
-- Example usecase:
-    - create an binance interface
-    - call methods on interface, data is returned as is
