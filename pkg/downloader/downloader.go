@@ -31,7 +31,7 @@ type Downloader struct {
 }
 
 func (d Downloader) String() string {
-	return fmt.Sprintf("\nExchange: %s, \nExports: %s, \nInterval: %v, \nSymbols: %v, \nFrom: %s, \nTo: %s",
+	return fmt.Sprintf("Exchange: %s, Exports: %s, Interval: %v, Symbols: %v, From: %s, To: %s",
 		d.Exchange, d.Exports, d.Interval, d.Symbols, d.Start.Format(YMD), d.End.Format(YMD))
 }
 

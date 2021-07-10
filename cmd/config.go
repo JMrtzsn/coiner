@@ -4,14 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/pkg/downloader"
-	exchange2 "github.com/jmrtzsn/coiner/pkg/exchange"
-	binance2 "github.com/jmrtzsn/coiner/pkg/exchange/binance"
-	export2 "github.com/jmrtzsn/coiner/pkg/export"
+	"github.com/jmrtzsn/coiner/pkg/exchange"
+	"github.com/jmrtzsn/coiner/pkg/exchange/binance"
+	"github.com/jmrtzsn/coiner/pkg/export"
 	"github.com/jmrtzsn/coiner/pkg/notification"
+	"github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/spf13/viper"
 	"github.com/xhit/go-str2duration/v2"
 	"go.uber.org/zap"
 	"log"
+	"os"
 	"time"
 )
 
@@ -35,6 +37,7 @@ type Config struct {
 func UnMarshal() *Config {
 	config := &Config{}
 	err := viper.Unmarshal(config)
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", projectpath.Root+config.Credentials)
 	if err != nil {
 		log.Fatalf("unable to decode config into struct, %v", err)
 	}
@@ -87,14 +90,14 @@ func (conf Config) NewDownloader(ctx context.Context) (*downloader.Downloader, e
 	}, nil
 }
 
-func (conf Config) setupExports(ctx context.Context) ([]export2.Export, error) {
-	var exports []export2.Export
+func (conf Config) setupExports(ctx context.Context) ([]export.Export, error) {
+	var exports []export.Export
 	for _, e := range conf.Exports {
 		switch e {
 		case "local":
-			exports = append(exports, export2.NewLocal(conf.Exchange))
+			exports = append(exports, export.NewLocal(conf.Exchange))
 		case "bucket":
-			bucket, err := export2.NewBucket(ctx, conf.Exchange, conf.Bucket)
+			bucket, err := export.NewBucket(ctx, conf.Exchange, conf.Bucket)
 			if err != nil {
 				return nil, err
 			}
@@ -106,10 +109,10 @@ func (conf Config) setupExports(ctx context.Context) ([]export2.Export, error) {
 	return exports, nil
 }
 
-func (conf Config) setupExchange(ctx context.Context) (exchange2.Exchange, error) {
+func (conf Config) setupExchange(ctx context.Context) (exchange.Exchange, error) {
 	switch conf.Exchange {
 	case "binance":
-		b := &binance2.Binance{}
+		b := &binance.Binance{}
 		b.Init(ctx, conf.Key, conf.Secret)
 		return b, nil
 	default:

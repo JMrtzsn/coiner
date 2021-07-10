@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/jmrtzsn/coiner/cmd"
-	export2 "github.com/jmrtzsn/coiner/pkg/export"
-	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
+	"github.com/jmrtzsn/coiner/pkg/export"
+	"github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -15,7 +15,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up download testing suite!")
-	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath2.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()
@@ -32,55 +32,33 @@ func TestDownload(t *testing.T) {
 	downloader.Download()
 
 	date1 := "2019-01-01"
-	date2 := "2019-01-02"
-	btcusdt := "BTCUSDT"
-	ethusdt := "ETHUSDT"
+	eos := "EOSUSDT"
 
 	t.Run("Local", func(t *testing.T) {
 		// Read and assert everything is correct
-		local, _ := downloader.Exports[0].(*export2.Local)
+		local, _ := downloader.Exports[0].(*export.Local)
 
-		btc := local.DirPath(btcusdt) + fmt.Sprintf("/%s.csv", date1)
+		btc := local.DirPath(eos) + fmt.Sprintf("/%s.csv", date1)
 		got, err := local.Read(btc)
 		assert.Nil(t, err)
 		if len(got) > 1 {
-			assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "3701.23000000", "3702.46000000", "3703.72000000", "3701.09000000", "17.10011000"}, got[1])
+			assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "2.53450000", "2.53860000", "2.54010000", "2.53310000", "2838.73000000"}, got[1])
 		} else {
 			t.Errorf("Read 0 records from file")
 		}
-
-		eth := local.DirPath(ethusdt) + fmt.Sprintf("/%s.csv", date2)
-		got, err = local.Read(eth)
-		assert.Nil(t, err)
-		if len(got) > 1 {
-			assert.Equal(t, []string{"2019-01-02T00:00:00Z", "1546387200", "139.10000000", "139.43000000", "140.00000000", "139.06000000", "3180.53061000"}, got[1])
-		} else {
-			t.Errorf("Read 0 records from file")
-		}
-
 		// Cleanup
-		err = os.RemoveAll(local.DirPath(btcusdt))
-		assert.Nil(t, err)
-		err = os.RemoveAll(local.DirPath(ethusdt))
+		err = os.RemoveAll(local.DirPath(eos))
 		assert.Nil(t, err)
 	})
 
 	t.Run("Bucket", func(t *testing.T) {
 
 		// Read and assert everything is correct
-		bucket, _ := downloader.Exports[1].(*export2.Bucket)
-		got, err := bucket.Read(date1, btcusdt)
+		bucket, _ := downloader.Exports[1].(*export.Bucket)
+		got, err := bucket.Read(date1, "EOSUSDT")
 		assert.Nil(t, err)
 		if len(got) > 1 {
-			assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "3701.23000000", "3702.46000000", "3703.72000000", "3701.09000000", "17.10011000"}, got[1])
-		} else {
-			t.Errorf("Read 0 records from gcp storage")
-		}
-
-		got, err = bucket.Read(date2, ethusdt)
-		assert.Nil(t, err)
-		if len(got) > 1 {
-			assert.Equal(t, []string{"2019-01-02T00:00:00Z", "1546387200", "139.10000000", "139.43000000", "140.00000000", "139.06000000", "3180.53061000"}, got[1])
+			assert.Equal(t, []string{"2019-01-01T00:00:00Z", "1546300800", "2.53450000", "2.53860000", "2.54010000", "2.53310000", "2838.73000000"}, got[1])
 		} else {
 			t.Errorf("Read 0 records from gcp storage")
 		}

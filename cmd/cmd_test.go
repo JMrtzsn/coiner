@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	projectpath2 "github.com/jmrtzsn/coiner/pkg/projectpath"
+	"github.com/jmrtzsn/coiner/pkg/projectpath"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -13,7 +13,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Println("Setting up CMD testing suite!")
-	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath2.Root)); err != nil {
+	if err := godotenv.Load(fmt.Sprintf("%s/test.env", projectpath.Root)); err != nil {
 		log.Fatal(err)
 	}
 	exitVal := m.Run()
@@ -26,7 +26,7 @@ func TestLoadConfig(t *testing.T) {
 	conf := UnMarshal()
 	got, err := conf.NewDownloader(context.Background())
 	assert.Nil(t, err)
-	want := "\nExchange: Binance, \nExports: [Local Bucket], \nInterval: 1m, \nSymbols: [BTCUSDT ETHUSDT], \nFrom: 2019-01-01, \nTo: 2019-01-02"
+	want := "Exchange: Binance, Exports: [Local Bucket], Interval: 1m, Symbols: [EOSUSDT], From: 2019-01-01, To: 2019-01-02"
 	assert.Equal(t, want, got.String())
 }
 
