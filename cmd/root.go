@@ -47,8 +47,8 @@ func init() {
 	rootCmd.Flags().StringP("interval", "i", "", "Interval (optional) defaults to 1m")
 	rootCmd.Flags().StringSlice("symbols", []string{}, "comma separated symbol list: --symbols=\"BTCUSDT,ETHUSDT\"")
 	rootCmd.Flags().StringSlice("exports", []string{}, "comma separated output list: --exports=\"local,bucket\"")
-	rootCmd.Flags().StringP("start", "s", "", "Start: 2019-01-01 (defaults to today)")
-	rootCmd.Flags().StringP("end", "d", "", "End: 2019-01-02 (defaults to today)")
+	rootCmd.Flags().StringP("start", "s", "", "Start: 2019-01-01 (defaults to yesterday)")
+	rootCmd.Flags().StringP("end", "d", "", "End: 2019-01-02 (defaults to yesterday)")
 
 }
 
@@ -78,8 +78,8 @@ func LoadConfig(name string) {
 	// Set default values
 	viper.SetDefault("Exchange", "binance")
 	viper.SetDefault("Interval", "1m")
-	viper.SetDefault("Start", time.Now().Format(dateFmt))
-	viper.SetDefault("End", time.Now().Format(dateFmt))
+	viper.SetDefault("Start", time.Now().AddDate(0, 0, -1).Format(dateFmt))
+	viper.SetDefault("End", time.Now().AddDate(0, 0, -1).Format(dateFmt))
 
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
