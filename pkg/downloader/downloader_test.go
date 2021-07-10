@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -47,7 +48,7 @@ func TestDownload(t *testing.T) {
 			t.Errorf("Read 0 records from file")
 		}
 		// Cleanup
-		err = os.RemoveAll(local.DirPath(eos))
+		err = os.RemoveAll(filepath.Join(projectpath.Root, "binance"))
 		assert.Nil(t, err)
 	})
 

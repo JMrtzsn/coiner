@@ -3,9 +3,9 @@ package downloader
 import (
 	"encoding/csv"
 	"fmt"
-	exchange2 "github.com/jmrtzsn/coiner/pkg/exchange"
-	export2 "github.com/jmrtzsn/coiner/pkg/export"
-	model2 "github.com/jmrtzsn/coiner/pkg/model"
+	"github.com/jmrtzsn/coiner/pkg/exchange"
+	"github.com/jmrtzsn/coiner/pkg/export"
+	"github.com/jmrtzsn/coiner/pkg/model"
 	"github.com/jmrtzsn/coiner/pkg/notification"
 	"go.uber.org/zap"
 	"io/ioutil"
@@ -21,8 +21,8 @@ const (
 )
 
 type Downloader struct {
-	Exchange exchange2.Exchange
-	Exports  []export2.Export
+	Exchange exchange.Exchange
+	Exports  []export.Export
 	Interval string
 	Duration time.Duration
 	Symbols  []string
@@ -88,7 +88,7 @@ func (d Downloader) Download() {
 // Minute by Minute TODO fix
 // batch creates a set of records containing data between from and to splitting by the duration, returning a day of records
 func (d Downloader) batch(symbol string, from, to time.Time, duration time.Duration) ([][]string, error) {
-	records := model2.RecordsWithHeader()
+	records := model.RecordsWithHeader()
 	for begin := from; begin.Before(to); begin = begin.Add(duration * batchSize) {
 		end := begin.Add(duration * batchSize)
 		if end.After(to) {
