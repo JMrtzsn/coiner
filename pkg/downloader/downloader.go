@@ -1,12 +1,14 @@
 package downloader
 
 import (
+	"encoding/csv"
 	"fmt"
 	exchange2 "github.com/jmrtzsn/coiner/pkg/exchange"
 	export2 "github.com/jmrtzsn/coiner/pkg/export"
 	model2 "github.com/jmrtzsn/coiner/pkg/model"
 	"github.com/jmrtzsn/coiner/pkg/notification"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"os"
 	"time"
 )
@@ -105,7 +107,7 @@ func (d Downloader) batch(symbol string, from, to time.Time, duration time.Durat
 }
 
 func (d Downloader) Export(symbol, date string, records [][]string) error {
-	temp, err := export2.WriteToTempFile(records)
+	temp, err := writeToTempFile(records)
 	if err != nil {
 		return fmt.Errorf("failed to create tempfile err: %s", err.Error())
 	}
@@ -126,4 +128,22 @@ func (d Downloader) Export(symbol, date string, records [][]string) error {
 		return fmt.Errorf("failed to remove tempfile err: %s", err.Error())
 	}
 	return nil
+}
+
+// writeToTempFile create a temp CSV file from records
+func writeToTempFile(records [][]string) (*os.File, error) {
+	file, err := ioutil.TempFile("", "file")
+	if err != nil {
+		return nil, err
+	}
+	w := csv.NewWriter(file)
+	err = w.WriteAll(records)
+
+	// Seek the pointer to the beginning
+	// TODO return buffer? function that resets file when reading
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
